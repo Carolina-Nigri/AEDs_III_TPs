@@ -1,0 +1,11 @@
+# Compiled class file
+*.class
+
+# Executable file
+*.exe
+
+# Output file
+*.out
+
+# Object file
+*.o
