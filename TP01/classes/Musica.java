@@ -2,21 +2,30 @@
 package TP01.classes;
 import java.util.Date;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 /** Classe Musica **/
 public class Musica {
     /* Atributos */
-        // TODO: Criar IDs
-    // protected int ID;
+    protected int ID;
     protected int duration_ms;
     protected Date release_date;
     protected String track_id, name;
-    protected ArrayList<String> artists = new ArrayList<String>();
+    protected ArrayList<String> artists;
 
     /* Getters e Setters */ 
+    public int getID() {
+        return ID;
+    }
+    public void setID(int iD) {
+        ID = iD;
+    }
     public int getDuration_ms() {
         return duration_ms;
     }
@@ -49,9 +58,17 @@ public class Musica {
     }
 
     /* Construtores */  
-    public Musica() { }
-    public Musica( int duration_ms, Date release_date, String track_id, String name, 
-                    ArrayList<String> artists ) {
+    public Musica() { 
+        this.ID = -1;
+        this.duration_ms = -1;
+        this.release_date = new Date();
+        this.track_id = new String();
+        this.name = new String();
+        this.artists = new ArrayList<String>();
+    }
+    public Musica( int ID, int duration_ms, Date release_date, String track_id, String name, 
+                   ArrayList<String> artists ) {
+        this.ID = ID;
         this.duration_ms = duration_ms;
         this.release_date = release_date;
         this.track_id = track_id;
@@ -60,6 +77,48 @@ public class Musica {
     }
 
     /* Métodos */
+    @Override
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return "Duration_ms: "+this.duration_ms+
+               "\nRelease_date: "+sdf.format(this.release_date)+
+               "\nTrack_id: "+this.track_id+
+               "\nName: "+this.name+
+               "\nArtists: "+this.artists.toString();
+    }
+    public byte[] toByteArray() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        
+        dos.writeInt(this.ID);
+        dos.writeInt(this.duration_ms);
+        dos.writeUTF(sdf.format(this.release_date)); // TODO: alterar depois
+        dos.writeUTF(this.track_id);
+        dos.writeUTF(this.name);
+
+        for(String artist : this.artists){
+            dos.writeUTF(artist);
+        }
+
+        return baos.toByteArray();
+    }
+
+    public void fromByteArray(byte ba[]) throws Exception{
+        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+        DataInputStream dis = new DataInputStream(bais);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        this.ID = dis.readInt();
+        this.duration_ms = dis.readInt();
+        this.release_date = sdf.parse(dis.readUTF()); // TODO: alterar depois
+        this.track_id = dis.readUTF();
+        this.name = dis.readUTF();
+        
+        // for(String artist : this.artists){
+        //     artist = dis.readUTF();
+        // }
+    }
     /**
      * Faz o parse de uma linha do arquivo CSV, atribuindo valores a um objeto da 
      * classe Musica a partir dos atributos lidos e separados
@@ -67,43 +126,39 @@ public class Musica {
      */
     public void readCSV(String line) {
         final int TAM = line.length();
-        int i = 0; // index da linha
+        int index = 0;
 
-        // Booleanos e Strings p/cada atributo
-            // TODO: Sugestão - usar só um booleano "found"
-        boolean foundDuration = false, foundDate = false, 
-                foundTrack = false, foundName = false;
+        // Strings p/salvar cada atributo
         String durationString = "", dateString = "", artistsString = "";
-
         this.track_id = this.name = ""; // inicializa atributos do tipo String
         
-        /*-----------------------------------------------------------------*/
+        Boolean found = false;
+    
         // Procura atributo duration_ms
-        while(!foundDuration){
-            // TODO: Sugestão - transformar esses while em uma função reaproveitável
-            if(line.charAt(i) != ','){ // add caracteres na string
-                durationString += line.charAt(i);
+        while(!found){
+            
+            if(line.charAt(index) != ','){ // add caracteres na string
+                durationString += line.charAt(index);
             } else{ // achou fim
-                foundDuration = true;
+                found = true;
             }
-            i++; // próximo index
+            index++; // próximo index
        
         }
-        
         this.duration_ms = Integer.parseInt(durationString); // transforma em int
-        /*-----------------------------------------------------------------*/
+        
         // Procura atributo release_date
-        while(!foundDate){
-
-            if(line.charAt(i) != ','){ // add caracteres na string
-                dateString += line.charAt(i);
+        found = false;
+        while(!found){
+            
+            if(line.charAt(index) != ','){ // add caracteres na string
+                dateString += line.charAt(index);
             } else{ // achou fim
-                foundDate = true;
+                found = true;
             }
-            i++; // próximo index
-
+            index++; // próximo index
+       
         }
-
         // Cria formato de data e transforma string em Date
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         try{
@@ -111,101 +166,63 @@ public class Musica {
         } catch(ParseException pe){
             pe.printStackTrace();
         }
-        /*-----------------------------------------------------------------*/
+    
         // Procura atributo track_id
-        while(!foundTrack){
-           
-            if(line.charAt(i) != ','){ // add caracteres na string
-                this.track_id += line.charAt(i);
+        found = false;
+        while(!found){
+            
+            if(line.charAt(index) != ','){ // add caracteres na string
+                this.track_id += line.charAt(index);
             } else{ // achou fim
-                foundTrack = true;
+                found = true;
             }
-            i++; // próximo index
-
+            index++; // próximo index
+       
         }
-        /*-----------------------------------------------------------------*/
+    
         // Procura atributo name
-        if(line.charAt(i) == '\"'){ // verifica se nome está entre aspas => contém vírgula
-            i++; // pula a " abrindo
+        found = false;
+        if(line.charAt(index) == '\"'){ // verifica se nome está entre aspas => contém vírgula
+            index++; // pula a " abrindo
 
-            while(!foundName){
+            while(!found){
 
-                if(line.charAt(i) != '\"'){ // add caracteres na string
-                    this.name += line.charAt(i);
+                if(line.charAt(index) != '\"'){ // add caracteres na string
+                    this.name += line.charAt(index);
                 } else{ // achou fim
-                    foundName = true;
+                    found = true;
                 }
-                i++; // próximo index
+                index++; // próximo index
 
             }
-            i++; // pula a vírgula      
+            index++; // pula a vírgula      
         }
         else{ // parse normal pela vírgula
-            while(!foundName){
-
-                if(line.charAt(i) != ','){ // add caracteres na string
-                    this.name += line.charAt(i);
+            while(!found){
+                
+                if(line.charAt(index) != ','){ // add caracteres na string
+                    this.name += line.charAt(index);
                 } else{ // achou fim
-                    foundName = true;
+                    found = true;
                 }
-                i++; // próximo index
-
+                index++; // próximo index
+        
             }
         }
-        /*-----------------------------------------------------------------*/
+    
         // Procura atributo artists
-        while(i < TAM){ // vai até o fim da linha
-            if( line.charAt(i) != '[' && line.charAt(i) != ']' && 
-                line.charAt(i) != '\'' && line.charAt(i) != '\"' ){
+        while(index < TAM){ // vai até o fim da linha
+            if( line.charAt(index) != '[' && line.charAt(index) != ']' && 
+                line.charAt(index) != '\'' && line.charAt(index) != '\"' ){
                     
-                artistsString += line.charAt(i); // add caracteres na string
+                artistsString += line.charAt(index); // add caracteres na string
             }
-            i++; // próximo index
+            index++; // próximo index
         }        
-
         // Add artistas separados por vírgula ao ArrayList
         String[] artistsArray = artistsString.split(", ");
         for(int j = 0; j < artistsArray.length; j++){
             this.artists.add(artistsArray[j]);
         }
     } // fim readCSV(String)
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        
-        System.out.println("=====Musica 1=====");
-        
-        String line1 = sc.nextLine();
-        Musica ms1 = new Musica();
-
-        ms1.readCSV(line1);
-
-        System.out.println("Duracao em ms: " + ms1.duration_ms);
-        System.out.println("Data de Lancamento: " + formatter.format(ms1.release_date));
-        System.out.println("Id da Musica: " + ms1.track_id);
-        System.out.println("Nome da Musica: " + ms1.name);
-        System.out.println("Artistas:");        
-        for(int i = 0; i < ms1.artists.size(); i++){
-            System.out.println("    " + ms1.artists.get(i));
-        }
-
-        System.out.println("=====Musica 2=====");
-        
-        String line2 = sc.nextLine();       
-        Musica ms2 = new Musica();
-
-        ms2.readCSV(line2);
-
-        System.out.println("Duracao em ms: " + ms2.duration_ms);
-        System.out.println("Data de Lancamento: " + formatter.format(ms2.release_date));
-        System.out.println("Id da Musica: " + ms2.track_id);
-        System.out.println("Nome da Musica: " + ms2.name);
-        System.out.println("Artistas:");        
-        for(int i = 0; i < ms2.artists.size(); i++){
-            System.out.println("    " + ms2.artists.get(i));
-        }
-
-        sc.close();
-    }
-}
+} // fim classe Musica
