@@ -16,42 +16,43 @@ public class Musica {
     protected int ID;
     protected int duration_ms;
     protected Date release_date;
-    protected String track_id, name;
+    protected String track_id, // string de tamanho fixo (22) 
+                     name;    // string de tamanho variável
     protected ArrayList<String> artists;
 
     /* Getters e Setters */ 
     public int getID() {
-        return ID;
+        return this.ID;
     }
-    public void setID(int iD) {
-        ID = iD;
+    public void setID(int ID) {
+        this.ID = ID;
     }
     public int getDuration_ms() {
-        return duration_ms;
+        return this.duration_ms;
     }
     public void setDuration_ms(int duration_ms) {
         this.duration_ms = duration_ms;
     }
     public Date getRelease_date() {
-        return release_date;
+        return this.release_date;
     }
     public void setRelease_date(Date release_date) {
         this.release_date = release_date;
     }
     public String getTrack_id() {
-        return track_id;
+        return this.track_id;
     }
     public void setTrack_id(String track_id) {
         this.track_id = track_id;
     }
     public String getName() {
-        return name;
+        return this.name;
     }
     public void setName(String name) {
         this.name = name;
     }
     public ArrayList<String> getArtists() {
-        return artists;
+        return this.artists;
     }
     public void setArtists(ArrayList<String> artists) {
         this.artists = artists;
@@ -59,15 +60,10 @@ public class Musica {
 
     /* Construtores */  
     public Musica() { 
-        this.ID = -1;
-        this.duration_ms = -1;
-        this.release_date = new Date();
-        this.track_id = new String();
-        this.name = new String();
-        this.artists = new ArrayList<String>();
+        this(-1, -1, new Date(), "", "", new ArrayList<String>());
     }
-    public Musica( int ID, int duration_ms, Date release_date, String track_id, String name, 
-                   ArrayList<String> artists ) {
+    public Musica( int ID, int duration_ms, Date release_date, String track_id, 
+                   String name, ArrayList<String> artists ) {
         this.ID = ID;
         this.duration_ms = duration_ms;
         this.release_date = release_date;
@@ -77,6 +73,9 @@ public class Musica {
     }
 
     /* Métodos */
+    /**
+     * Retorna atributos da classe Musica como string
+     */
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -86,42 +85,66 @@ public class Musica {
                "\nName: "+this.name+
                "\nArtists: "+this.artists.toString();
     }
-    public byte[] toByteArray() throws IOException {
+    /**
+     * Converte objeto da classe para um array de bytes, escrevendo todos os atributos
+     * e a quantidade de elementos na lista de artistas
+     * @return Byte array do objeto
+     */
+    public byte[] toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         
-        dos.writeInt(this.ID);
-        dos.writeInt(this.duration_ms);
-        
-        dos.writeUTF(sdf.format(this.release_date)); // TODO: alterar depois
-        
-        dos.writeUTF(this.track_id);
-        dos.writeInt(this.name.length());
-        dos.writeUTF(this.name);
-
-        dos.writeInt(artists.size());
-        for(String artist : this.artists){
-            dos.writeUTF(artist);
+        try{
+            dos.writeInt(this.ID);
+            dos.writeInt(this.duration_ms);
+            
+            // TODO: alterar depois p/escrever tipo Date
+            dos.writeUTF(sdf.format(this.release_date)); 
+            
+            dos.writeUTF(this.track_id); 
+            dos.writeUTF(this.name);
+           
+            dos.writeInt(artists.size()); // qtd de artistas na lista
+            for(String artist : this.artists){
+                dos.writeUTF(artist);
+            }
+        } catch(IOException ioe){
+            ioe.printStackTrace();
         }
 
         return baos.toByteArray();
     }
-
-    public void fromByteArray(byte ba[]) throws Exception{
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+    /**
+     * Converte um array de bytes para os atributos da classe Musica, atribuindo
+     * a um objeto
+     * @param byteArray array de bytes de um objeto Musica
+     */
+    public void fromByteArray(byte byteArray[]) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
         DataInputStream dis = new DataInputStream(bais);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-        this.ID = dis.readInt();
-        this.duration_ms = dis.readInt();
-        this.release_date = sdf.parse(dis.readUTF()); // TODO: alterar depois
-        this.track_id = dis.readUTF();
-        this.name = dis.readUTF();
+        try{
+            this.ID = dis.readInt();
+            this.duration_ms = dis.readInt();
+            
+            // TODO: alterar depois p/ler tipo Date
+            try{
+                this.release_date = sdf.parse(dis.readUTF()); 
+            } catch(ParseException pe){
+                pe.printStackTrace();
+            }
     
-        int num_artists = dis.readInt();
-        for(int i = 0; i < num_artists; i++){
-            artists.set(i, dis.readUTF());
+            this.track_id = dis.readUTF();
+            this.name = dis.readUTF();
+    
+            int num_artists = dis.readInt(); // qtd de artistas na lista
+            for(int i = 0; i < num_artists; i++){
+                artists.add(dis.readUTF());
+            }
+        } catch(IOException ioe){
+            ioe.printStackTrace();
         }
     }
     /**
@@ -167,7 +190,7 @@ public class Musica {
         // Cria formato de data e transforma string em Date
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         try{
-            release_date = sdf.parse(dateString);
+            this.release_date = sdf.parse(dateString);
         } catch(ParseException pe){
             pe.printStackTrace();
         }
@@ -229,5 +252,5 @@ public class Musica {
         for(int j = 0; j < artistsArray.length; j++){
             this.artists.add(artistsArray[j]);
         }
-    } // fim readCSV(String)
-} // fim classe Musica
+    } 
+} 
