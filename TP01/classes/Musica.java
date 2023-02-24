@@ -93,10 +93,14 @@ public class Musica {
         
         dos.writeInt(this.ID);
         dos.writeInt(this.duration_ms);
+        
         dos.writeUTF(sdf.format(this.release_date)); // TODO: alterar depois
+        
         dos.writeUTF(this.track_id);
+        dos.writeInt(this.name.length());
         dos.writeUTF(this.name);
 
+        dos.writeInt(artists.size());
         for(String artist : this.artists){
             dos.writeUTF(artist);
         }
@@ -114,10 +118,11 @@ public class Musica {
         this.release_date = sdf.parse(dis.readUTF()); // TODO: alterar depois
         this.track_id = dis.readUTF();
         this.name = dis.readUTF();
-        
-        // for(String artist : this.artists){
-        //     artist = dis.readUTF();
-        // }
+    
+        int num_artists = dis.readInt();
+        for(int i = 0; i < num_artists; i++){
+            artists.set(i, dis.readUTF());
+        }
     }
     /**
      * Faz o parse de uma linha do arquivo CSV, atribuindo valores a um objeto da 
