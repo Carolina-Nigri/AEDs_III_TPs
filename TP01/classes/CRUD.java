@@ -29,7 +29,7 @@ public class CRUD {
     public void read(int ID) {
         
     }
-    public void update(Musica obj) {
+    public void update(int ID) {
         
     }
     public void delete(int ID) {
