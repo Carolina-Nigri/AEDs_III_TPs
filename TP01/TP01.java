@@ -20,6 +20,7 @@ public class TP01 {
         System.out.println("1 - Create");
         System.out.println("2 - Update");
         System.out.println("3 - Delete");
+        System.out.println("4 - Read");
         System.out.println("0 - Sair");
 
         System.out.print("-> ");
@@ -108,6 +109,12 @@ public class TP01 {
                     System.out.println("Qual o id da musica que deve ser deletado ");   
                     int deleta = Integer.parseInt(sc.nextLine());     
                     arqivo.delete(deleta);
+                    break;
+                case 4:
+                    System.out.println("Qual o id que deseja ser lido ");
+                    int ler = Integer.parseInt(sc.nextLine());
+                    Musica read = arqivo.read(ler);
+                    read.toString();
                     break;
                 default:
                     System.out.println("Valor Invalido ");   

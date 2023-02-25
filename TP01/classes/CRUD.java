@@ -24,10 +24,74 @@ public class CRUD {
         arq.close();
     }
     public void create(Musica obj) {
-        
+        int id = -1;
+        byte[] objectData;
+        long pos;
+
+        try{
+
+            arq.seek(0);
+
+            id = arq.readInt();
+            obj.setID(id);
+
+            objectData = obj.toByteArray();
+            pos = arq.length();
+            arq.seek(pos);
+
+            arq.writeChar(' ');
+            arq.writeInt(objectData.length);
+            arq.write(objectData);
+
+
+            arq.seek(0);
+            arq.writeInt(id + 1);
+
+        }catch(IOException e){
+
+            id = -1;
+            System.err.println("Impossivel a leitura desse arquivo");
+
+        }
     }
-    public void read(int ID) {
-        
+    public Musica read(int ID)throws IOException {
+        Musica resp = new Musica();
+        try{
+            boolean foud = false;
+            long pos, arqLen = arq.length();
+            byte lapide;
+            int regSize, regID;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            arq.seek(0); 
+            arq.skipBytes(Integer.BYTES);
+            pos = arq.getFilePointer(); 
+
+            while(!foud && pos != arqLen){
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+
+                if(lapide == ' '){ // verifica se registro ainda não foi removido
+                    regID = arq.readInt();
+
+                    // verifica se é o ID do registro a ser removido
+                    if(regID == ID){ 
+                        arq.seek(pos +2); // retorna para posição da lápide
+                        byte[] data = new byte[regSize];
+                        arq.read(data);
+                        resp.fromByteArray(data);
+                        foud = true;
+                    }
+                }
+
+                arq.skipBytes(Integer.BYTES + regSize); // pula bytes do registro atual
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+        }catch(Exception e){
+            System.err.println("Nao foi possivel fazer a leitura do registro");
+        }
+
+        return resp;
     }
     public void update(Musica obj) {
         
