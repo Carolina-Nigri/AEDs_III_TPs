@@ -79,7 +79,8 @@ public class Musica {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return "Duration_ms: "+this.duration_ms+
+        return "ID: "+this.ID+
+               "\nDuration_ms: "+this.duration_ms+
                "\nRelease_date: "+sdf.format(this.release_date)+
                "\nTrack_id: "+this.track_id+
                "\nName: "+this.name+
@@ -110,6 +111,7 @@ public class Musica {
                 dos.writeUTF(artist);
             }
         } catch(IOException ioe){
+            System.err.println("Erro ao escrever atributo como byte");
             ioe.printStackTrace();
         }
 
@@ -133,6 +135,7 @@ public class Musica {
             try{
                 this.release_date = sdf.parse(dis.readUTF()); 
             } catch(ParseException pe){
+                System.err.println("Erro ao fazer parse da data");
                 pe.printStackTrace();
             }
     
@@ -144,6 +147,7 @@ public class Musica {
                 artists.add(dis.readUTF());
             }
         } catch(IOException ioe){
+            System.err.println("Erro ao ler atributo a partir de bytes");
             ioe.printStackTrace();
         }
     }
@@ -152,7 +156,7 @@ public class Musica {
      * classe Musica a partir dos atributos lidos e separados
      * @param line String de uma linha do CSV 
      */
-    public void readCSV(String line) {
+    public void parseCSV(String line) {
         final int TAM = line.length();
         int index = 0;
 
@@ -192,6 +196,7 @@ public class Musica {
         try{
             this.release_date = sdf.parse(dateString);
         } catch(ParseException pe){
+            System.err.println("Erro ao fazer parse da data");
             pe.printStackTrace();
         }
     
