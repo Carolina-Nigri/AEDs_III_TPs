@@ -17,47 +17,72 @@ public class CRUD {
     public CRUD(String nome_arq) throws FileNotFoundException {
         this.nome_arq = nome_arq; 
         this.arq = new RandomAccessFile((this.nome_arq + ".db"), "rw");
+        
+        try{
+            arq.seek(0);
+            arq.writeInt(0); // ultimoID inicial
+        } catch(IOException ioe){
+            System.err.println("Erro ao inicializar CRUD");
+            ioe.printStackTrace();
+        }
     }
 
     /* Métodos */
-    public void close() throws IOException {
-        arq.close();
+    /**
+     * Fecha arquivo (RandomAcessFile)
+     */
+    public void close() {
+        try{
+            arq.close();
+        } catch(IOException ioe){
+            System.err.println("Erro ao fechar arquivo");
+            ioe.printStackTrace();
+        }
     }
+    /**
+     * Cria um registro de uma musica, lendo o último ID registrado para setar o ID atual,
+     * atualizando o valor ao final 
+     * @param obj Musica a ser registrada no arquivo 
+     */
     public void create(Musica obj) {
-        int id = -1;
+        int ultimoID = -1;
         byte[] objectData;
         long pos;
 
         try{
+            arq.seek(0); // início do arquivo
 
-            arq.seek(0);
+            // lê ID do último registro em arquivo (0 se estiver vazio)
+            ultimoID = arq.readInt();
+            ultimoID++;
+            obj.setID(ultimoID);
 
-            id = arq.readInt();
-            obj.setID(id);
-
+            // cria registro como array de bytes do objeto
             objectData = obj.toByteArray();
             pos = arq.length();
-            arq.seek(pos);
-
-            arq.writeChar(' ');
-            arq.writeInt(objectData.length);
+            arq.seek(pos); // fim do arquivo
+            
+            arq.writeByte(' '); // lapide
+            arq.writeInt(objectData.length); // tamanho do registro (bytes)
             arq.write(objectData);
 
-
-            arq.seek(0);
-            arq.writeInt(id + 1);
-
-        }catch(IOException e){
-
-            id = -1;
-            System.err.println("Impossivel a leitura desse arquivo");
-
+            arq.seek(0); // início do arquivo
+            arq.writeInt(ultimoID);
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
+            ioe.printStackTrace();
         }
     }
-    public Musica read(int ID)throws IOException {
-        Musica resp = new Musica();
+    /**
+     * 
+     * @param ID da musica a ser lida
+     * @return objeto Musica lido do arquivo
+     */
+    public Musica read(int ID) {
+        Musica obj = new Musica();
+       
         try{
-            boolean foud = false;
+            boolean found = false;
             long pos, arqLen = arq.length();
             byte lapide;
             int regSize, regID;
@@ -67,38 +92,52 @@ public class CRUD {
             arq.skipBytes(Integer.BYTES);
             pos = arq.getFilePointer(); 
 
-            while(!foud && pos != arqLen){
+            while(!found && pos != arqLen){
                 lapide = arq.readByte();
                 regSize = arq.readInt();
 
-                if(lapide == ' '){ // verifica se registro ainda não foi removido
+                if(lapide == ' '){ // verifica se registro não foi removido
                     regID = arq.readInt();
 
-                    // verifica se é o ID do registro a ser removido
+                    // verifica se é o ID do registro a ser lido
                     if(regID == ID){ 
-                        arq.seek(pos +2); // retorna para posição da lápide
+                        // retorna para ID
+                        arq.seek(pos + 1 + Integer.BYTES); 
+
+                        // lê registro em bytes e converte para objeto 
                         byte[] data = new byte[regSize];
                         arq.read(data);
-                        resp.fromByteArray(data);
-                        foud = true;
+                        obj.fromByteArray(data);
+                        
+                        found = true;
                     }
                 }
 
                 arq.skipBytes(Integer.BYTES + regSize); // pula bytes do registro atual
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
-        }catch(Exception e){
-            System.err.println("Nao foi possivel fazer a leitura do registro");
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
+            ioe.printStackTrace();
         }
 
-        return resp;
+        return obj;
     }
+    /**
+     * 
+     * @param obj
+     */
     public void update(Musica obj) {
         
     }
-    public void delete(int ID) {
+    /**
+     * 
+     * @param ID
+     */
+    public boolean delete(int ID) {
+        boolean removido = false;
+       
         try{
-            boolean removido = false;
             long pos, arqLen = arq.length();
             byte lapide;
             int regSize, regID;
@@ -127,7 +166,10 @@ public class CRUD {
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
         } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao deletar registro no arquivo");
             ioe.printStackTrace();
         }
+
+        return removido;
     }
 }

@@ -2,7 +2,6 @@
 package TP01;
 import TP01.classes.CRUD;
 import TP01.classes.Musica;
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Date;
 import java.io.BufferedReader;
@@ -27,10 +26,9 @@ public class TP01 {
             BufferedReader fr = new BufferedReader(new FileReader(baseFile));
             
             // arquivo RAF (registros em bytes) 
-            CRUD arquivo = new CRUD("musicas");
+            CRUD arquivo = new CRUD("TP01/data/musicas");
 
             String line; // linha do CSV
-            int id = 1; // id do registro
             
             // lê 10 musicas (linhas) do CSV, faz parse e cria registro no arquivo
             for(int i = 0; i < 10; i++){
@@ -38,11 +36,10 @@ public class TP01 {
                 
                 Musica musica = new Musica();
                 musica.parseCSV(line);
-                musica.setID(id);
-
+               
                 arquivo.create(musica); 
-
-                id++;
+                
+                System.out.println("\n" + musica);
             }
 
             int opc = -1; // opcao do menu
@@ -60,9 +57,10 @@ public class TP01 {
                     case 1: { // Create: lê atributos da musica e cria registro no arquivo
                         System.out.println("\n**Criando musica**");
                         
-                        Musica msc = lerMusica(id);
-                        System.out.println("\n" + msc);
+                        Musica msc = lerMusica();
                         arquivo.create(msc);
+                        
+                        System.out.println("\n" + msc);
                                                 
                         break;
                     } case 2: { // Read: lê ID da música, lê musica do arquivo e imprime
@@ -145,10 +143,9 @@ public class TP01 {
     /**
      * Solicita ao usuário que digite os atributos da musica, criando uma instância
      * e retorna o objeto criado
-     * @param id identificador da Musica (int)
      * @return objeto da musica lida
      */
-    public static Musica lerMusica(int id) {   
+    public static Musica lerMusica() {   
         int duration_ms = -1;
         String track_id = "", name = "";
         Date release_date = new Date();
@@ -190,7 +187,7 @@ public class TP01 {
             ioe.printStackTrace();
         }
         
-        Musica msc = new Musica(id, duration_ms, release_date, track_id, name, artists);
+        Musica msc = new Musica(-1, duration_ms, release_date, track_id, name, artists);
 
         return msc;
     }
