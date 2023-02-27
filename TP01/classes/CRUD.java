@@ -127,8 +127,9 @@ public class CRUD {
      * 
      * @param obj
      */
-    public void update(Musica obj) {
-        
+    public boolean update(int id , int itn) {
+        boolean resp = false;
+        return resp;
     }
     /**
      * 

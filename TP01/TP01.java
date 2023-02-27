@@ -77,11 +77,16 @@ public class TP01 {
                         System.out.print("ID da musica que deve ser alterada: ");
                         
                         // TODO: implementar update
-                        // int updateID = Integer.parseInt(br.readLine());
-                        // if(arquivo.update(updateID))
-                        //     System.out.println("Musica atualizada com sucesso");
-                        // else
-                        //     System.out.println("Erro ao atualizar musica");
+                        int updateID = Integer.parseInt(br.readLine());
+                        System.out.println("Digite o valor parar ser alterado de [0-4]");
+                        System.out.println("[0] - duration_ms\n[1] - release_date\n[2] - track_id\n[3] - name\n[4] - artists");
+                        int valor = Integer.parseInt(br.readLine());
+                        if(arquivo.update(updateID, valor)){
+                            System.out.println("Musica atualizada com sucesso");
+                        }
+                        else{
+                            System.out.println("Erro ao atualizar musica");
+                        }
                         
                         break;
                     } case 4: { // Delete: lê ID da música, procura no arquivo e exclui
