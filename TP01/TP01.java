@@ -31,16 +31,16 @@ public class TP01 {
             String line; // linha do CSV
             
             // lê 10 musicas (linhas) do CSV, faz parse e cria registro no arquivo
-            for(int i = 0; i < 10; i++){
+            for(int i = 0; i < 100; i++){
                 line = fr.readLine();
                 
                 Musica musica = new Musica();
                 musica.parseCSV(line);
                
                 arquivo.create(musica); 
-                
-                System.out.println("\n" + musica);
             }
+
+            System.out.println("Base de dados carregada. 100 registros criados.");
 
             int opc = -1; // opcao do menu
 
@@ -69,7 +69,8 @@ public class TP01 {
                         
                         int readID = Integer.parseInt(br.readLine());
                         Musica msc = arquivo.read(readID);
-                        System.out.println("\n" + msc);
+                        if(msc != null)
+                            System.out.println("\n" + msc);
                         
                         break;
                     } case 3: { // Update

@@ -79,7 +79,7 @@ public class CRUD {
      * @return objeto Musica lido do arquivo
      */
     public Musica read(int ID) {
-        Musica obj = new Musica();
+        Musica obj = null;
        
         try{
             boolean found = false;
@@ -95,25 +95,27 @@ public class CRUD {
             while(!found && pos != arqLen){
                 lapide = arq.readByte();
                 regSize = arq.readInt();
+                regID = arq.readInt();
 
-                if(lapide == ' '){ // verifica se registro não foi removido
-                    regID = arq.readInt();
+                if(regID == ID){
+                    found = true;
 
-                    // verifica se é o ID do registro a ser lido
-                    if(regID == ID){ 
+                    if(lapide == ' '){
                         // retorna para ID
                         arq.seek(pos + 1 + Integer.BYTES); 
 
                         // lê registro em bytes e converte para objeto 
                         byte[] data = new byte[regSize];
                         arq.read(data);
+                        obj = new Musica();
                         obj.fromByteArray(data);
-                        
-                        found = true;
+                    } else{
+                        System.out.println("Registro pesquisado ja foi excluido");
                     }
+                } else{
+                    arq.skipBytes(regSize - Integer.BYTES);
                 }
-
-                arq.skipBytes(Integer.BYTES + regSize); // pula bytes do registro atual
+                
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
         } catch(IOException ioe){
@@ -136,8 +138,8 @@ public class CRUD {
      * @param ID
      */
     public boolean delete(int ID) {
-        boolean removido = false;
-       
+        boolean found = false;
+        
         try{
             long pos, arqLen = arq.length();
             byte lapide;
@@ -148,29 +150,32 @@ public class CRUD {
             arq.skipBytes(Integer.BYTES);
             pos = arq.getFilePointer(); 
 
-            while(!removido && pos != arqLen){
+            while(!found && pos != arqLen){
                 lapide = arq.readByte();
                 regSize = arq.readInt();
 
-                if(lapide == ' '){ // verifica se registro ainda não foi removido
+                if(lapide == ' '){ // verifica se registro não foi removido
                     regID = arq.readInt();
 
                     // verifica se é o ID do registro a ser removido
                     if(regID == ID){ 
                         arq.seek(pos); // retorna para posição da lápide
                         arq.writeByte('*');
-                        removido = true;
+                        found = true;
+                    } else{
+                        arq.skipBytes(regSize - Integer.BYTES);
                     }
+                } else{
+                    arq.skipBytes(regSize); // pula bytes do registro atual
                 }
-
-                arq.skipBytes(Integer.BYTES + regSize); // pula bytes do registro atual
+                
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
         } catch(IOException ioe){
-            System.err.println("Erro de leitura/escrita ao deletar registro no arquivo");
+            System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
             ioe.printStackTrace();
         }
 
-        return removido;
+        return found;
     }
 }
