@@ -77,18 +77,20 @@ public class TP01 {
                         System.out.println("\n**Atualizando musica**");
                         System.out.print("ID da musica que deve ser alterada: ");
                         
-                        // TODO: implementar update
                         int updateID = Integer.parseInt(br.readLine());
-                        System.out.println("Digite o valor parar ser alterado de [0-4]");
-                        System.out.println("[0] - duration_ms\n[1] - release_date\n[2] - track_id\n[3] - name\n[4] - artists");
-                        int valor = Integer.parseInt(br.readLine());
-                        if(arquivo.update(updateID, valor)){
-                            System.out.println("Musica atualizada com sucesso");
+                        Musica msc = arquivo.read(updateID);
+                        if(msc != null){
+                            System.out.println("\n" + msc);
+                            Musica nova = lerAtualizacao(msc);
+                                                    
+                            if(arquivo.update(nova))
+                                System.out.println("Musica atualizada com sucesso");
+                            else
+                                System.out.println("Erro ao atualizar musica");
+                        } else{
+                            System.out.println("Musica a ser atualizada nao encontrada");
                         }
-                        else{
-                            System.out.println("Erro ao atualizar musica");
-                        }
-                        
+
                         break;
                     } case 4: { // Delete: lê ID da música, procura no arquivo e exclui
                         System.out.println("\n**Deletando musica**");
@@ -196,5 +198,80 @@ public class TP01 {
         Musica msc = new Musica(-1, duration_ms, release_date, track_id, name, artists);
 
         return msc;
+    }
+    /**
+     * 
+     * @param atual
+     * @return
+     */
+    public static Musica lerAtualizacao(Musica atual) {
+        System.out.println("Qual atributo deseja alterar?");
+        System.out.println("[0] - duration_ms");
+        System.out.println("[1] - release_date");
+        System.out.println("[2] - track_id");
+        System.out.println("[3] - name");
+        System.out.println("[4] - artists");
+        
+        int valor = -1;
+        boolean invalido =false;
+        Musica nova = atual.clone();
+        
+        try{
+
+            do{
+                System.out.print("-> ");
+                valor = Integer.parseInt(br.readLine());
+                invalido = (valor < 0) || (valor > 4);
+                if(invalido) System.out.println("Opcao invalida, digite novamente");
+            } while(invalido);
+
+            switch(valor){
+                case 0: {
+                    System.out.print("Duration_ms: ");
+                    nova.setDuration_ms(Integer.parseInt(br.readLine()));    
+
+                    break;
+                } case 1: {
+                    System.out.print("Release_date [yyyy-MM-dd]: ");
+                    String stringDate = br.readLine();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");      
+                    try{
+                        nova.setRelease_date(sdf.parse(stringDate));
+                    } catch(ParseException pe){
+                        System.err.println("Erro ao fazer parse da data");
+                        pe.printStackTrace();
+                    }
+
+                    break;
+                } case 2: {
+                    System.out.print("Track_id: ");
+                    nova.setTrack_id(br.readLine());
+                    
+                    break;
+                } case 3: {
+                    System.out.print("Name: ");
+                    nova.setName(br.readLine());
+                    
+                    break;
+                } case 4: {
+                    System.out.println("Artists [FIM quando terminar]:");
+                    String line = br.readLine();
+                    ArrayList<String> artists = new ArrayList<String>();
+                    while( !(line.equals("FIM")) ){
+                        artists.add(line);
+                        line = br.readLine();
+                    }
+                    nova.setArtists(artists);
+                    
+                    break;
+                }
+            }
+
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura na atualizacao da musica");
+            ioe.printStackTrace();
+        }
+
+        return nova;
     }
 }
