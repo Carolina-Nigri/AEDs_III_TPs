@@ -86,6 +86,21 @@ public class Musica {
                "\nName: "+this.name+
                "\nArtists: "+this.artists.toString();
     }
+
+    public Musica clone()
+    {
+        Musica resp = new Musica();
+        resp.setID(this.ID);
+        resp.setDuration_ms(this.duration_ms);
+        resp.setRelease_date(this.release_date);
+        resp.setTrack_id(this.track_id);
+        resp.setName(this.name);
+        resp.setArtists(this.artists);
+        
+        return resp;
+    }
+
+
     /**
      * Converte objeto da classe para um array de bytes, escrevendo todos os atributos
      * e a quantidade de elementos na lista de artistas
