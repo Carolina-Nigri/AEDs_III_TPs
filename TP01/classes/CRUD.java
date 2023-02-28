@@ -3,6 +3,7 @@ package TP01.classes;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.File;
 
 /** Classe CRUD **/
 public class CRUD {
@@ -39,16 +40,19 @@ public class CRUD {
             ioe.printStackTrace();
         }
     }
+    /**
+     * 
+     */
+    public boolean deleteFile() {
+        boolean sucesso = false;
+        
+        File file = new File(this.nome_arq + ".db");
+        
+        if( file.delete() )
+            sucesso = true;
 
-    public void clear()throws IOException{
-        try {
-            arq.setLength(0);
-        } catch (IOException e) {
-             System.err.println("Erro ao limpar o arquivo");
-        }
-     }
-
-
+        return sucesso;
+    }
     /**
      * Cria um registro de uma musica, lendo o último ID registrado para setar o ID atual,
      * atualizando o valor ao final 
