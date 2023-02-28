@@ -9,3 +9,6 @@
 
 # Object file
 *.o
+
+# Data file
+*.db

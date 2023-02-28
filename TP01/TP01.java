@@ -137,6 +137,9 @@ public class TP01 {
 
                         break;
                     } case 6: { // Fecha arquivo e encerra programa
+                        int n = arquivo.remakeFile();
+                        System.out.println(n);
+                        
                         System.out.println("\n**Encerrando programa**");
                         arquivo.close();
                         break;

@@ -74,18 +74,114 @@ public class CRUD {
      * @return int da quantidade de registros
      */
     public int remakeFile() {
-        int qtd = 0;
-        
-        // TODO: implementar remakeFile
+        int n = 0;
+       
+        try{
+            String tmpPath = "TP01/data/musicasTMP.db";
+            RandomAccessFile tmp = new RandomAccessFile(tmpPath, "rw");
+            long pos, arqLen = arq.length();
+            byte lapide;
+            int regSize, ultimoID;
 
-        return qtd;
+            // posiciona ponteiro no início, lê cabeçalho e salva posição
+            arq.seek(0); 
+            ultimoID = arq.readInt();
+            tmp.writeInt(ultimoID); // escreve ultimo ID no arquivo tmp
+            pos = arq.getFilePointer();
+            
+            while(pos != arqLen){
+                // lê primeiros dados
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+                
+                if(lapide == ' '){ // lapide falsa => registro não excluído
+                    n++;
+
+                    // lê registro em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    Musica obj = new Musica();
+                    obj.fromByteArray(data);
+                    
+                    // escreve registro no arquivo tmp
+                    byte[] objectData = obj.toByteArray();
+                    tmp.writeByte(' '); // lapide
+                    tmp.writeInt(objectData.length); // tamanho do registro (bytes)
+                    tmp.write(objectData);
+                }
+                
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+
+            if(deleteFile()){ // copia tmp p/arquivo original (criado de novo depois de deletado)
+                this.arq = new RandomAccessFile(this.path, "rw");
+                
+                // array de bytes c/tds os bytes de tmp
+                int tmpLen = (int)tmp.length();
+                byte[] tmpData = new byte[tmpLen];
+                tmp.seek(0);
+                tmp.read(tmpData);
+
+                // escreve no arquivo original
+                arq.seek(0);
+                arq.write(tmpData);
+            } else{
+                System.err.println("Erro ao deletar arquivo original para refaze-lo");
+            }
+
+            tmp.close();
+            File file = new File(tmpPath);
+            file.delete();
+        } catch(FileNotFoundException fnfe){
+            System.err.println("Erro ao criar arquivo temporario para refazer arquivo");
+            fnfe.printStackTrace();
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler registros no arquivo");
+            ioe.printStackTrace();
+        }
+
+        return n;
     }
     /* Manipulação de registros */
     /**
      * Imprime todos os registros válidos do arquivo (lapide falsa)
      */
     public void printAll() {
-        // TODO: implementar printAll
+        try{
+            long pos, arqLen = arq.length();
+            byte lapide;
+            int regSize;
+            int n = 0;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            arq.seek(0); 
+            arq.skipBytes(Integer.BYTES);
+            pos = arq.getFilePointer();
+            
+            while(pos != arqLen){
+                // lê primeiros dados
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+                
+                if(lapide == ' '){ // lapide falsa => registro não excluído
+                    n++;
+                    
+                    // lê registro em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    Musica obj = new Musica();
+                    obj.fromByteArray(data);
+
+                    // imprime registro
+                    System.out.println("\n"+n+"\n"+obj);
+                }
+                
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler registros no arquivo");
+            ioe.printStackTrace();
+        }
     }
         /* CRUD */
     /**
@@ -161,7 +257,7 @@ public class CRUD {
                         obj = new Musica();
                         obj.fromByteArray(data);
                     } else{
-                        System.out.println("Registro pesquisado ja foi excluido");
+                        System.err.println("Registro pesquisado ja foi excluido");
                     }
                 } else{ // pula bytes de parte do registro (ID já foi pulado)
                     arq.skipBytes(regSize - Integer.BYTES);
@@ -222,7 +318,7 @@ public class CRUD {
                             System.out.println("Novo ID da musica: "+objNovo.getID());
                         }
                     } else{
-                        System.out.println("Registro pesquisado ja foi excluido");
+                        System.err.println("Registro pesquisado ja foi excluido");
                         pos = arqLen;
                     }
                 } else{ // pula bytes de parte do registro (ID já foi pulado)
