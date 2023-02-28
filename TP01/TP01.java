@@ -28,20 +28,6 @@ public class TP01 {
             // arquivo RAF (registros em bytes) 
             CRUD arquivo = new CRUD("TP01/data/musicas");
 
-            String line; // linha do CSV
-            
-            // lê 10 musicas (linhas) do CSV, faz parse e cria registro no arquivo
-            for(int i = 0; i < 100; i++){
-                line = fr.readLine();
-                
-                Musica musica = new Musica();
-                musica.parseCSV(line);
-               
-                arquivo.create(musica); 
-            }
-
-            System.out.println("Base de dados carregada. 100 registros criados.");
-
             int opc = -1; // opcao do menu
 
             do{
@@ -49,12 +35,21 @@ public class TP01 {
 
                 // executa tarefas do menu de CRUD
                 switch(opc){ 
-                    case 0: { // fecha arquivo e encerra programa
-                        System.out.println("\n**Encerrando programa**");
-                        arquivo.close();
+                      case 0: { // Faz carga do arquivo
+                        System.out.println("\n**Fazendo carga inicial**");
+
+                        String line; // linha do CSV
+                        // lê 100 musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < 100; i++){
+                            line = fr.readLine();
+                            Musica musica = new Musica();
+                            musica.parseCSV(line);
+                            arquivo.create(musica); 
+                        }
+                        System.out.println("Base de dados carregada. 100 registros criados.");
+
                         break;
-                    }
-                    case 1: { // Create: lê atributos da musica e cria registro no arquivo
+                    } case 1: { // Create: lê atributos da musica e cria registro no arquivo
                         System.out.println("\n**Criando musica**");
                         
                         Musica msc = lerMusica();
@@ -104,9 +99,55 @@ public class TP01 {
                             System.out.println("Erro ao remover musica");
                                                     
                         break;
+                    } case 5: { // Ordenação externa
+                        int opc2 = -1;
+
+                        do{ 
+                            opc2 = subMenu();
+
+                            switch(opc2){
+                                  case 0:{ // Sai do menu interno
+                                    System.out.println("\n**Retornando ao menu anterior...**");
+                                    break;
+                                } case 1:{
+                                    System.out.println("\n**Intercalacao balanceada comum**");
+                                    
+                                    // TODO: implementar ordenacao comum
+
+                                    break;
+                                } case 2:{
+                                    System.out.println("\n**Intercalacao balanceada com blocos de tamanho variavel**");
+                                    
+                                    // TODO: implementar ordenacao blocos
+
+                                    break;
+                                } case 3:{
+                                    System.out.println("\n**Intercalacao balanceada com selecao por substituicao**");
+                                    
+                                    // TODO: implementar ordenacao selecao
+
+                                    break;
+                                }
+                            }
+                        } while(opc2 != 0);
+
+                        break;
+                    } case 6: { // Fecha arquivo e encerra programa
+                        System.out.println("\n**Encerrando programa**");
+                        arquivo.close();
+                        break;
+                    } case 7: { // Deleta arquivo
+                        System.out.println("\n**Deletando arquivo de registros**");
+                       
+                        if(arquivo.deleteFile())
+                            System.out.println("Arquivo deletado com sucesso");
+                        else
+                            System.out.println("Erro ao deletar arquivo");
+
+                        break;
                     }
                 }
-            } while(opc != 0);
+            } while(opc != 6);
           
             fr.close();
             br.close();
@@ -125,11 +166,14 @@ public class TP01 {
     public static int menu() {
         System.out.println("\nCRUD - TP01");
         System.out.println("Escolha uma das opcoes:");
-        System.out.println("0 - Sair");
+        System.out.println("0 - Carga do arquivo");
         System.out.println("1 - Create");
         System.out.println("2 - Read");
         System.out.println("3 - Update");
         System.out.println("4 - Delete");
+        System.out.println("5 - Ordenacao");
+        System.out.println("6 - Fechar programa");
+        System.out.println("7 - Deletar arquivo");
         
         int opc = -1;
         boolean invalido = false;
@@ -138,11 +182,40 @@ public class TP01 {
             do{
                 System.out.print("-> ");
                 opc = Integer.parseInt(br.readLine());
-                invalido = (opc < 0) || (opc > 4);
+                invalido = (opc < 0) || (opc > 7);
                 if(invalido) System.out.println("Opcao invalida! Digite novamente");
             } while(invalido);
         } catch(IOException ioe){
             System.err.println("Erro ao ler opcao do menu");
+            ioe.printStackTrace();
+        }
+
+        return opc;
+    }
+    /**
+     * Mostra submenu na tela e solicita ao usuário qual opção ele deseja executar (Ordenacao)
+     * @return int opção lida
+     */
+    public static int subMenu() {
+        System.out.println("\nORDENACAO");
+        System.out.println("Escolha uma das opcoes:");
+        System.out.println("0 - Voltar ao menu anterior");
+        System.out.println("1 - Intercalacao balanceada comum");
+        System.out.println("2 - Intercalacao balanceada com blocos de tamanho variavel");
+        System.out.println("3 - Intercalacao balanceada com selecao por substituicao");
+        
+        int opc = -1;
+        boolean invalido = false;
+     
+        try{
+            do{
+                System.out.print("-> ");
+                opc = Integer.parseInt(br.readLine());
+                invalido = (opc < 0) || (opc > 3);
+                if(invalido) System.out.println("Opcao invalida! Digite novamente");
+            } while(invalido);
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler opcao do submenu");
             ioe.printStackTrace();
         }
 
@@ -206,11 +279,11 @@ public class TP01 {
      */
     public static Musica lerAtualizacao(Musica atual) {
         System.out.println("\nQual atributo deseja alterar?");
-        System.out.println("[0] - duration_ms");
-        System.out.println("[1] - release_date");
-        System.out.println("[2] - track_id");
-        System.out.println("[3] - name");
-        System.out.println("[4] - artists");
+        System.out.println("0 - Duration_ms");
+        System.out.println("1 - Release_date");
+        System.out.println("2 - Track_id");
+        System.out.println("3 - Name");
+        System.out.println("4 - Artists");
         
         int valor = -1;
         boolean invalido =false;
