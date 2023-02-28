@@ -205,7 +205,7 @@ public class TP01 {
      * @return
      */
     public static Musica lerAtualizacao(Musica atual) {
-        System.out.println("Qual atributo deseja alterar?");
+        System.out.println("\nQual atributo deseja alterar?");
         System.out.println("[0] - duration_ms");
         System.out.println("[1] - release_date");
         System.out.println("[2] - track_id");
@@ -227,12 +227,12 @@ public class TP01 {
 
             switch(valor){
                 case 0: {
-                    System.out.print("Duration_ms: ");
+                    System.out.print("\nDuration_ms: ");
                     nova.setDuration_ms(Integer.parseInt(br.readLine()));    
 
                     break;
                 } case 1: {
-                    System.out.print("Release_date [yyyy-MM-dd]: ");
+                    System.out.print("\nRelease_date [yyyy-MM-dd]: ");
                     String stringDate = br.readLine();
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");      
                     try{
@@ -244,17 +244,17 @@ public class TP01 {
 
                     break;
                 } case 2: {
-                    System.out.print("Track_id: ");
+                    System.out.print("\nTrack_id: ");
                     nova.setTrack_id(br.readLine());
                     
                     break;
                 } case 3: {
-                    System.out.print("Name: ");
+                    System.out.print("\nName: ");
                     nova.setName(br.readLine());
                     
                     break;
                 } case 4: {
-                    System.out.println("Artists [FIM quando terminar]:");
+                    System.out.println("\nArtists [FIM quando terminar]:");
                     String line = br.readLine();
                     ArrayList<String> artists = new ArrayList<String>();
                     while( !(line.equals("FIM")) ){

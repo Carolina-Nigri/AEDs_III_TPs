@@ -129,9 +129,59 @@ public class CRUD {
      * 
      * @param obj
      */
-    public boolean update(int id , int itn) {
-        boolean resp = false;
-        return resp;
+    public boolean update(Musica objNovo) {
+        boolean found = false;
+
+        try{
+            long pos, arqLen = arq.length();
+            byte lapide;
+            byte[] objectData;
+            int regSize, regSizeNovo, regID;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            arq.seek(0); 
+            arq.skipBytes(Integer.BYTES);
+            pos = arq.getFilePointer(); 
+
+            while(!found && pos != arqLen){
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+                regID = arq.readInt();
+
+                if(regID == objNovo.getID()){
+                    if(lapide == ' '){
+                        found = true;
+                   
+                        // retorna para ID
+                        arq.seek(pos + 1 + Integer.BYTES); 
+
+                        // cria registro como array de bytes do objeto novo
+                        objectData = objNovo.toByteArray();
+                        regSizeNovo = objectData.length;
+
+                        if(regSizeNovo == regSize){
+                            arq.write(objectData);
+                        } else{
+                            arq.seek(pos); // retorna para posição da lápide
+                            arq.writeByte('*');
+                            create(objNovo);
+                        }
+                    } else{
+                        pos = arqLen;
+                        System.out.println("Registro pesquisado ja foi excluido");
+                    }
+                } else{
+                    arq.skipBytes(regSize - Integer.BYTES);
+                }
+                
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
+            ioe.printStackTrace();
+        }
+
+        return found;
     }
     /**
      * 
