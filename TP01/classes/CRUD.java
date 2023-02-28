@@ -39,6 +39,16 @@ public class CRUD {
             ioe.printStackTrace();
         }
     }
+
+    public void clear()throws IOException{
+        try {
+            arq.setLength(0);
+        } catch (IOException e) {
+             System.err.println("Erro ao limpar o arquivo");
+        }
+     }
+
+
     /**
      * Cria um registro de uma musica, lendo o último ID registrado para setar o ID atual,
      * atualizando o valor ao final 
