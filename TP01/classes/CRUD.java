@@ -165,6 +165,7 @@ public class CRUD {
                             arq.seek(pos); // retorna para posição da lápide
                             arq.writeByte('*');
                             create(objNovo);
+                            System.out.println("Novo ID da musica: "+objNovo.getID());
                         }
                     } else{
                         pos = arqLen;
