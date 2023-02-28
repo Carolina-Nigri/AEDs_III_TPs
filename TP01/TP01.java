@@ -12,21 +12,25 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-/* Classe TP01 => Main */
+/* Classe TP01 (Main) */
 public class TP01 {
+    /* Atributos */
     public static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        
+    
+    /* Métodos */
+    /* Main */
     /**
-     * 
+     * Fornece um menu com opcoes para carregar o arquivo da base de dados (CSV),
+     * realizar operações do CRUD e fazer ordenações por intercalação balanceada
      */
     public static void main(String[] args) {
         try{
             // arquivo CSV (base de dados)
-            String baseFile = "TP01/data/spotify.csv";
-            BufferedReader fr = new BufferedReader(new FileReader(baseFile));
+            String basePath = "TP01/data/spotify.csv";
+            BufferedReader fr = new BufferedReader(new FileReader(basePath));
             
             // arquivo RAF (registros em bytes) 
-            CRUD arquivo = new CRUD("TP01/data/musicas");
+            CRUD arquivo = new CRUD("TP01/data/musicas.db");
 
             int opc = -1; // opcao do menu
 
@@ -35,7 +39,7 @@ public class TP01 {
 
                 // executa tarefas do menu de CRUD
                 switch(opc){ 
-                      case 0: { // Faz carga do arquivo
+                      case 0: { // Carga do CSV
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
@@ -49,7 +53,7 @@ public class TP01 {
                         System.out.println("Base de dados carregada. 100 registros criados.");
 
                         break;
-                    } case 1: { // Create: lê atributos da musica e cria registro no arquivo
+                    } case 1: { // Create
                         System.out.println("\n**Criando musica**");
                         
                         Musica msc = lerMusica();
@@ -58,7 +62,7 @@ public class TP01 {
                         System.out.println("\n" + msc);
                                                 
                         break;
-                    } case 2: { // Read: lê ID da música, lê musica do arquivo e imprime
+                    } case 2: { // Read
                         System.out.println("\n**Lendo musica**");
                         System.out.print("ID da musica a ser lida: ");
                         
@@ -87,7 +91,7 @@ public class TP01 {
                         }
 
                         break;
-                    } case 4: { // Delete: lê ID da música, procura no arquivo e exclui
+                    } case 4: { // Delete
                         System.out.println("\n**Deletando musica**");
                         System.out.print("ID da musica que deve ser deletada: ");   
                         
@@ -99,7 +103,7 @@ public class TP01 {
                             System.out.println("Erro ao remover musica");
                                                     
                         break;
-                    } case 5: { // Ordenação externa
+                    } case 5: { // Ordenação (submenu)
                         int opc2 = -1;
 
                         do{ 
@@ -159,12 +163,13 @@ public class TP01 {
             ioe.printStackTrace();
         }
     }
+    /* Menus */
     /**
-     * Mostra menu na tela e solicita ao usuário qual opção ele deseja executar (CRUD)
+     * Mostra menu principal e solicita ao usuário qual opção ele deseja executar
      * @return int opção lida
      */
     public static int menu() {
-        System.out.println("\nCRUD - TP01");
+        System.out.println("\nMenu principal - TP01");
         System.out.println("Escolha uma das opcoes:");
         System.out.println("0 - Carga do arquivo");
         System.out.println("1 - Create");
@@ -197,9 +202,9 @@ public class TP01 {
      * @return int opção lida
      */
     public static int subMenu() {
-        System.out.println("\nORDENACAO");
+        System.out.println("\nMenu secundario - Ordenacao externa");
         System.out.println("Escolha uma das opcoes:");
-        System.out.println("0 - Voltar ao menu anterior");
+        System.out.println("0 - Voltar ao menu principal");
         System.out.println("1 - Intercalacao balanceada comum");
         System.out.println("2 - Intercalacao balanceada com blocos de tamanho variavel");
         System.out.println("3 - Intercalacao balanceada com selecao por substituicao");
@@ -221,9 +226,10 @@ public class TP01 {
 
         return opc;
     }
+    /* Leituras */
     /**
      * Solicita ao usuário que digite os atributos da musica, criando uma instância
-     * e retorna o objeto criado
+     * e retornando o objeto criado
      * @return objeto da musica lida
      */
     public static Musica lerMusica() {   
@@ -273,9 +279,10 @@ public class TP01 {
         return msc;
     }
     /**
-     * 
-     * @param atual
-     * @return
+     * Lê o atributo que o usuário deseja alterar da música e retorna um objeto novo
+     * com a alteração do atributo feita 
+     * @param atual objeto Musica atual
+     * @return nova objeto Musica alterado
      */
     public static Musica lerAtualizacao(Musica atual) {
         System.out.println("\nQual atributo deseja alterar?");
@@ -285,20 +292,19 @@ public class TP01 {
         System.out.println("3 - Name");
         System.out.println("4 - Artists");
         
-        int valor = -1;
+        int opc = -1;
         boolean invalido =false;
         Musica nova = atual.clone();
         
         try{
-
             do{
                 System.out.print("-> ");
-                valor = Integer.parseInt(br.readLine());
-                invalido = (valor < 0) || (valor > 4);
+                opc = Integer.parseInt(br.readLine());
+                invalido = (opc < 0) || (opc > 4);
                 if(invalido) System.out.println("Opcao invalida, digite novamente");
             } while(invalido);
 
-            switch(valor){
+            switch(opc){
                 case 0: {
                     System.out.print("\nDuration_ms: ");
                     nova.setDuration_ms(Integer.parseInt(br.readLine()));    

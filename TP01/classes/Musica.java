@@ -73,8 +73,9 @@ public class Musica {
     }
 
     /* Métodos */
+    /* Sobreescritos */
     /**
-     * Retorna atributos da classe Musica como string
+     * @return atributos da classe Musica como string
      */
     @Override
     public String toString() {
@@ -86,21 +87,17 @@ public class Musica {
                "\nName: "+this.name+
                "\nArtists: "+this.artists.toString();
     }
-
-    public Musica clone()
-    {
-        Musica resp = new Musica();
-        resp.setID(this.ID);
-        resp.setDuration_ms(this.duration_ms);
-        resp.setRelease_date(this.release_date);
-        resp.setTrack_id(this.track_id);
-        resp.setName(this.name);
-        resp.setArtists(this.artists);
+    /**
+     * @return objeto clone do objeto corrente
+     */
+    @Override
+    public Musica clone() {
+        Musica clone = new Musica( this.ID, this.duration_ms, this.release_date, 
+                                   this.track_id, this.name, this.artists );
         
-        return resp;
+        return clone;
     }
-
-
+    /* Manipulação de bytes */
     /**
      * Converte objeto da classe para um array de bytes, escrevendo todos os atributos
      * e a quantidade de elementos na lista de artistas
@@ -114,10 +111,7 @@ public class Musica {
         try{
             dos.writeInt(this.ID);
             dos.writeInt(this.duration_ms);
-            
-            // TODO: alterar depois p/escrever tipo Date
             dos.writeUTF(sdf.format(this.release_date)); 
-            
             dos.writeUTF(this.track_id); 
             dos.writeUTF(this.name);
            
@@ -134,7 +128,7 @@ public class Musica {
     }
     /**
      * Converte um array de bytes para os atributos da classe Musica, atribuindo
-     * a um objeto
+     * ao objeto corrente
      * @param byteArray array de bytes de um objeto Musica
      */
     public void fromByteArray(byte byteArray[]) {
@@ -145,8 +139,7 @@ public class Musica {
         try{
             this.ID = dis.readInt();
             this.duration_ms = dis.readInt();
-            
-            // TODO: alterar depois p/ler tipo Date
+
             try{
                 this.release_date = sdf.parse(dis.readUTF()); 
             } catch(ParseException pe){
@@ -166,8 +159,9 @@ public class Musica {
             ioe.printStackTrace();
         }
     }
+    /* Database */
     /**
-     * Faz o parse de uma linha do arquivo CSV, atribuindo valores a um objeto da 
+     * Faz o parse de uma linha do arquivo CSV, atribuindo valores ao objeto corrente da 
      * classe Musica a partir dos atributos lidos e separados
      * @param line String de uma linha do CSV 
      */
@@ -180,8 +174,8 @@ public class Musica {
         this.track_id = this.name = ""; // inicializa atributos do tipo String
         
         Boolean found = false;
-    
-        // Procura atributo duration_ms
+     
+        /* Procura atributo duration_ms */
         while(!found){
             
             if(line.charAt(index) != ','){ // add caracteres na string
@@ -194,7 +188,7 @@ public class Musica {
         }
         this.duration_ms = Integer.parseInt(durationString); // transforma em int
         
-        // Procura atributo release_date
+        /* Procura atributo release_date */
         found = false;
         while(!found){
             
@@ -215,7 +209,7 @@ public class Musica {
             pe.printStackTrace();
         }
     
-        // Procura atributo track_id
+        /* Procura atributo track_id */
         found = false;
         while(!found){
             
@@ -228,7 +222,7 @@ public class Musica {
        
         }
     
-        // Procura atributo name
+        /* Procura atributo name */
         found = false;
         if(line.charAt(index) == '\"'){ // verifica se nome está entre aspas => contém vírgula
             index++; // pula a " abrindo
@@ -258,7 +252,7 @@ public class Musica {
             }
         }
     
-        // Procura atributo artists
+        /* Procura atributo artists */
         while(index < TAM){ // vai até o fim da linha
             if( line.charAt(index) != '[' && line.charAt(index) != ']' && 
                 line.charAt(index) != '\'' && line.charAt(index) != '\"' ){

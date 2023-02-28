@@ -9,15 +9,29 @@ import java.io.File;
 public class CRUD {
     /* Atributos */
     protected RandomAccessFile arq;
-    protected String nome_arq;
+    protected String path;
+
+    /* Getters e Setters */
+    public RandomAccessFile getArq() {
+        return this.arq;
+    }
+    public void setArq(RandomAccessFile arq) {
+        this.arq = arq;
+    }
+    public String getPath() {
+        return this.path;
+    }
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     /* Construtores */
     public CRUD() throws FileNotFoundException { 
-        this("teste");
+        this("teste.db");
     }
-    public CRUD(String nome_arq) throws FileNotFoundException {
-        this.nome_arq = nome_arq; 
-        this.arq = new RandomAccessFile((this.nome_arq + ".db"), "rw");
+    public CRUD(String path) throws FileNotFoundException {
+        this.path = path; 
+        this.arq = new RandomAccessFile(this.path, "rw");
         
         try{
             arq.seek(0);
@@ -29,8 +43,9 @@ public class CRUD {
     }
 
     /* Métodos */
+    /* Manipulação do arquivo */
     /**
-     * Fecha arquivo (RandomAcessFile)
+     * Fecha arquivo RandomAcessFile
      */
     public void close() {
         try{
@@ -41,18 +56,38 @@ public class CRUD {
         }
     }
     /**
-     * 
+     * Deleta arquivo RandomAcessFile 
+     * @return true se conseguir deletar, false caso contrario
      */
     public boolean deleteFile() {
         boolean sucesso = false;
         
-        File file = new File(this.nome_arq + ".db");
+        File file = new File(this.path);
         
-        if( file.delete() )
+        if(file.delete())
             sucesso = true;
 
         return sucesso;
     }
+    /**
+     * Refaz o arquivo, retirando os registros com lapide verdadeira (excluidos)
+     * @return int da quantidade de registros
+     */
+    public int remakeFile() {
+        int qtd = 0;
+        
+        // TODO: implementar remakeFile
+
+        return qtd;
+    }
+    /* Manipulação de registros */
+    /**
+     * Imprime todos os registros válidos do arquivo (lapide falsa)
+     */
+    public void printAll() {
+        // TODO: implementar printAll
+    }
+        /* CRUD */
     /**
      * Cria um registro de uma musica, lendo o último ID registrado para setar o ID atual,
      * atualizando o valor ao final 
@@ -88,7 +123,8 @@ public class CRUD {
         }
     }
     /**
-     * 
+     * Percorre o arquivo procurando pelo ID da musica que se quer ler, quando encontra
+     * lê o registro em bytes e converte para um objeto Musica, que é retornado
      * @param ID da musica a ser lida
      * @return objeto Musica lido do arquivo
      */
@@ -107,15 +143,16 @@ public class CRUD {
             pos = arq.getFilePointer(); 
 
             while(!found && pos != arqLen){
+                // lê primeiros dados
                 lapide = arq.readByte();
                 regSize = arq.readInt();
                 regID = arq.readInt();
 
-                if(regID == ID){
+                if(regID == ID){ // verifica se registro é o procurado
                     found = true;
 
-                    if(lapide == ' '){
-                        // retorna para ID
+                    if(lapide == ' '){ // lapide falsa => registro não excluído
+                        // retorna para posição do ID
                         arq.seek(pos + 1 + Integer.BYTES); 
 
                         // lê registro em bytes e converte para objeto 
@@ -126,7 +163,7 @@ public class CRUD {
                     } else{
                         System.out.println("Registro pesquisado ja foi excluido");
                     }
-                } else{
+                } else{ // pula bytes de parte do registro (ID já foi pulado)
                     arq.skipBytes(regSize - Integer.BYTES);
                 }
                 
@@ -140,8 +177,10 @@ public class CRUD {
         return obj;
     }
     /**
-     * 
-     * @param obj
+     * Atualiza um registro de musica, procurando registro antigo e comparando seus 
+     * tamanhos. Se o novo registro for menor ou maior que o antigo, deleta o antigo e
+     * cria o novo no fim do arquivo, se forem de mesmo tamanho apenas escreve no lugar
+     * @param objNovo nova musica a ser registrada
      */
     public boolean update(Musica objNovo) {
         boolean found = false;
@@ -158,49 +197,51 @@ public class CRUD {
             pos = arq.getFilePointer(); 
 
             while(!found && pos != arqLen){
+                // lê primeiros dados
                 lapide = arq.readByte();
                 regSize = arq.readInt();
                 regID = arq.readInt();
 
-                if(regID == objNovo.getID()){
-                    if(lapide == ' '){
+                if(regID == objNovo.getID()){ // verifica se registro é o procurado
+                    if(lapide == ' '){ // lapide falsa => registro não excluído
                         found = true;
                    
-                        // retorna para ID
+                        // retorna para posição do ID
                         arq.seek(pos + 1 + Integer.BYTES); 
 
                         // cria registro como array de bytes do objeto novo
                         objectData = objNovo.toByteArray();
                         regSizeNovo = objectData.length;
 
-                        if(regSizeNovo == regSize){
+                        if(regSizeNovo == regSize){ // mesmo tamanho => OK
                             arq.write(objectData);
-                        } else{
+                        } else{ // maior ou menor => delete + create
                             arq.seek(pos); // retorna para posição da lápide
                             arq.writeByte('*');
                             create(objNovo);
                             System.out.println("Novo ID da musica: "+objNovo.getID());
                         }
                     } else{
-                        pos = arqLen;
                         System.out.println("Registro pesquisado ja foi excluido");
+                        pos = arqLen;
                     }
-                } else{
+                } else{ // pula bytes de parte do registro (ID já foi pulado)
                     arq.skipBytes(regSize - Integer.BYTES);
                 }
                 
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
         } catch(IOException ioe){
-            System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
+            System.err.println("Erro de leitura/escrita ao atualizar registro no arquivo");
             ioe.printStackTrace();
         }
 
         return found;
     }
     /**
-     * 
-     * @param ID
+     * Deleta um registro do arquivo, procurando a musica que se deseja deletar pelo
+     * ID e marcando sua lapide como verdadeira (*) quando encontrar
+     * @param ID da musica a ser deletada
      */
     public boolean delete(int ID) {
         boolean found = false;
@@ -216,31 +257,39 @@ public class CRUD {
             pos = arq.getFilePointer(); 
 
             while(!found && pos != arqLen){
+                // lê primeiros dados
                 lapide = arq.readByte();
                 regSize = arq.readInt();
 
-                if(lapide == ' '){ // verifica se registro não foi removido
+                if(lapide == ' '){ // lapide falsa => registro não excluído
                     regID = arq.readInt();
 
-                    // verifica se é o ID do registro a ser removido
-                    if(regID == ID){ 
+                    if(regID == ID){ // verifica se registro é o procurado 
                         arq.seek(pos); // retorna para posição da lápide
                         arq.writeByte('*');
                         found = true;
-                    } else{
+                    } else{ // pula bytes de parte do registro (ID já foi pulado)
                         arq.skipBytes(regSize - Integer.BYTES);
                     }
-                } else{
-                    arq.skipBytes(regSize); // pula bytes do registro atual
+                } else{ // pula bytes do registro inteiro
+                    arq.skipBytes(regSize); 
                 }
                 
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
         } catch(IOException ioe){
-            System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
+            System.err.println("Erro de leitura/escrita ao deletar registro no arquivo");
             ioe.printStackTrace();
         }
 
         return found;
+    }
+        /* Ordenação */
+    /**
+     * Ordena arquivo por intercalação balanceada (chama funções da classe Sort)
+     * @param int tipo de ordenação
+     */
+    public void sort(int tipo) {
+        // TODO: implementar sort
     }
 }
