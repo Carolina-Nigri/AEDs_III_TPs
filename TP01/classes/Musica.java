@@ -73,7 +73,7 @@ public class Musica {
     }
 
     /* Métodos */
-    /* Sobreescritos */
+        /* Sobreescritos */
     /**
      * @return atributos da classe Musica como string
      */
@@ -97,7 +97,7 @@ public class Musica {
         
         return clone;
     }
-    /* Manipulação de bytes */
+        /* Manipulação de bytes */
     /**
      * Converte objeto da classe para um array de bytes, escrevendo todos os atributos
      * e a quantidade de elementos na lista de artistas
@@ -159,7 +159,7 @@ public class Musica {
             ioe.printStackTrace();
         }
     }
-    /* Database */
+        /* Database */
     /**
      * Faz o parse de uma linha do arquivo CSV, atribuindo valores ao objeto corrente da 
      * classe Musica a partir dos atributos lidos e separados

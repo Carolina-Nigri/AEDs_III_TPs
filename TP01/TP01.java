@@ -18,7 +18,7 @@ public class TP01 {
     public static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     
     /* Métodos */
-    /* Main */
+        /* Main */
     /**
      * Fornece um menu com opcoes para carregar o arquivo da base de dados (CSV),
      * realizar operações do CRUD e fazer ordenações por intercalação balanceada
@@ -104,23 +104,19 @@ public class TP01 {
 
                         break;
                     } case 5: { // Ordenação (submenu)
-                        // TESTES
-                        arquivo.printAll();
-                        
-                        int v = 0, n = 0;
-                        v = arquivo.totalValid();
-                        System.out.println("\nValidos: "+v);
-                        n = arquivo.totalNotValid();
-                        System.out.println("Nao validos: "+n);
+                        /* TESTES */
+                        // arquivo.printAll();
+                        // int v = 0, n = 0;
+                        // v = arquivo.totalValid();
+                        // System.out.println("\nValidos: "+v);
+                        // n = arquivo.totalNotValid();
+                        // System.out.println("Nao validos: "+n);
+                        // System.out.print("\nRemake file ['s']? ");
+                        // String c = br.readLine();
+                        // if(c.charAt(0)=='s'){
+                        //     arquivo.remakeFile();
+                        // }
 
-                        System.out.print("\nRemake file ['s']? ");
-                        String c = br.readLine();
-                        
-                        if(c.charAt(0)=='s'){
-                            arquivo.remakeFile();
-                        }
-
-                        /*
                         int opc2 = -1;
 
                         do{ 
@@ -130,28 +126,23 @@ public class TP01 {
                                   case 0:{ // Sai do menu interno
                                     System.out.println("\n**Retornando ao menu anterior...**");
                                     break;
-                                } case 1:{
-                                    System.out.println("\n**Intercalacao balanceada comum**");
-                                    
-                                    // TODO: implementar ordenacao comum
+                                } case 1:
+                                  case 2:
+                                  case 3:{
+                                    System.out.print("\n**Intercalacao balanceada ");
+                                    if(opc2 == 1) 
+                                        System.out.println("comum**");
+                                    else if(opc2 == 1) 
+                                        System.out.println("com blocos de tamanho variavel**");
+                                    else 
+                                        System.out.println("com selecao por substituicao**"); 
 
-                                    break;
-                                } case 2:{
-                                    System.out.println("\n**Intercalacao balanceada com blocos de tamanho variavel**");
-                                    
-                                    // TODO: implementar ordenacao blocos
-
-                                    break;
-                                } case 3:{
-                                    System.out.println("\n**Intercalacao balanceada com selecao por substituicao**");
-                                    
-                                    // TODO: implementar ordenacao selecao
+                                    arquivo.sort(opc2);
 
                                     break;
                                 }
                             }
                         } while(opc2 != 0);
-                        */
 
                         break;
                     } case 6: { // Fecha arquivo e encerra programa
@@ -181,7 +172,7 @@ public class TP01 {
             ioe.printStackTrace();
         }
     }
-    /* Menus */
+        /* Menus */
     /**
      * Mostra menu principal e solicita ao usuário qual opção ele deseja executar
      * @return int opção lida
@@ -244,7 +235,7 @@ public class TP01 {
 
         return opc;
     }
-    /* Leituras */
+        /* Leituras */
     /**
      * Solicita ao usuário que digite os atributos da musica, criando uma instância
      * e retornando o objeto criado
@@ -258,7 +249,7 @@ public class TP01 {
 
         try{
             // Lê duration_ms
-            System.out.print("Duration_ms: ");
+            System.out.print("Duration_ms [inteiro]: ");
             duration_ms = Integer.parseInt(br.readLine());
 
             // Lê release_date
@@ -273,7 +264,7 @@ public class TP01 {
             }
 
             // Lê track_id
-            System.out.print("Track_id: ");
+            System.out.print("Track_id [22 caracteres]: ");
             track_id = br.readLine();
 
             // Lê name
@@ -324,7 +315,7 @@ public class TP01 {
 
             switch(opc){
                 case 0: {
-                    System.out.print("\nDuration_ms: ");
+                    System.out.print("\nDuration_ms [inteiro]: ");
                     nova.setDuration_ms(Integer.parseInt(br.readLine()));    
 
                     break;
@@ -341,7 +332,7 @@ public class TP01 {
 
                     break;
                 } case 2: {
-                    System.out.print("\nTrack_id: ");
+                    System.out.print("\nTrack_id [22 caracteres]: ");
                     nova.setTrack_id(br.readLine());
                     
                     break;

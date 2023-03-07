@@ -1,5 +1,6 @@
 /** Pacotes **/
 package TP01.classes;
+import TP01.classes.Sort;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class CRUD {
     }
 
     /* Métodos */
-    /* Manipulação do arquivo */
+        /* Manipulação do arquivo */
     /**
      * Fecha arquivo RandomAcessFile
      */
@@ -138,7 +139,7 @@ public class CRUD {
             ioe.printStackTrace();
         }
     }
-    /* Manipulação de registros */
+        /* Manipulação de registros */
     /**
      * Imprime todos os registros válidos do arquivo (lapide falsa)
      */
@@ -453,6 +454,16 @@ public class CRUD {
      * @param int tipo de ordenação
      */
     public void sort(int tipo) {
-        // TODO: implementar sort
+        Sort ordena = new Sort();
+        
+        this.remakeFile();
+        
+        if(tipo == 1){ // Comum
+            ordena.intercalaComum(this.path);
+        } else if(tipo == 2){ // Blocos de tamanho variavel
+            ordena.intercalaBlocosVar(this.path);
+        } else if(tipo == 3){ // Selecao por substituicao
+            ordena.intercalaSubstituicao(this.path);
+        }
     }
 }
