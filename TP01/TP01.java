@@ -43,14 +43,14 @@ public class TP01 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
-                        // lê 100 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 100; i++){
+                        // lê 1000 musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < 1000; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
                             arquivo.create(musica); 
                         }
-                        System.out.println("Base de dados carregada. 100 registros criados.");
+                        System.out.println("Base de dados carregada. 1000 registros criados.");
 
                         break;
                     } case 1: { // Create
@@ -101,9 +101,26 @@ public class TP01 {
                             System.out.println("Musica removida com sucesso");
                         else
                             System.out.println("Erro ao remover musica");
-                                                    
+
                         break;
                     } case 5: { // Ordenação (submenu)
+                        // TESTES
+                        arquivo.printAll();
+                        
+                        int v = 0, n = 0;
+                        v = arquivo.totalValid();
+                        System.out.println("\nValidos: "+v);
+                        n = arquivo.totalNotValid();
+                        System.out.println("Nao validos: "+n);
+
+                        System.out.print("\nRemake file ['s']? ");
+                        String c = br.readLine();
+                        
+                        if(c.charAt(0)=='s'){
+                            arquivo.remakeFile();
+                        }
+
+                        /*
                         int opc2 = -1;
 
                         do{ 
@@ -134,12 +151,10 @@ public class TP01 {
                                 }
                             }
                         } while(opc2 != 0);
+                        */
 
                         break;
                     } case 6: { // Fecha arquivo e encerra programa
-                        int n = arquivo.remakeFile();
-                        System.out.println(n);
-                        
                         System.out.println("\n**Encerrando programa**");
                         arquivo.close();
                         break;

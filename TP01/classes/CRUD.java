@@ -71,11 +71,8 @@ public class CRUD {
     }
     /**
      * Refaz o arquivo, retirando os registros com lapide verdadeira (excluidos)
-     * @return int da quantidade de registros
      */
-    public int remakeFile() {
-        int n = 0;
-       
+    public void remakeFile() {
         try{
             String tmpPath = "TP01/data/musicasTMP.db";
             RandomAccessFile tmp = new RandomAccessFile(tmpPath, "rw");
@@ -95,8 +92,6 @@ public class CRUD {
                 regSize = arq.readInt();
                 
                 if(lapide == ' '){ // lapide falsa => registro não excluído
-                    n++;
-
                     // lê registro em bytes e converte para objeto 
                     byte[] data = new byte[regSize];
                     arq.read(data);
@@ -108,12 +103,15 @@ public class CRUD {
                     tmp.writeByte(' '); // lapide
                     tmp.writeInt(objectData.length); // tamanho do registro (bytes)
                     tmp.write(objectData);
+                } else{
+                    arq.skipBytes(regSize); // pula registro
                 }
                 
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
             }
 
-            if(deleteFile()){ // copia tmp p/arquivo original (criado de novo depois de deletado)
+            // copia tmp p/arquivo original (criado de novo depois de deletado)
+            if(deleteFile()){ 
                 this.arq = new RandomAccessFile(this.path, "rw");
                 
                 // array de bytes c/tds os bytes de tmp
@@ -139,8 +137,6 @@ public class CRUD {
             System.err.println("Erro ao ler registros no arquivo");
             ioe.printStackTrace();
         }
-
-        return n;
     }
     /* Manipulação de registros */
     /**
@@ -151,7 +147,6 @@ public class CRUD {
             long pos, arqLen = arq.length();
             byte lapide;
             int regSize;
-            int n = 0;
 
             // posiciona ponteiro no início, pula cabeçalho e salva posição
             arq.seek(0); 
@@ -164,8 +159,6 @@ public class CRUD {
                 regSize = arq.readInt();
                 
                 if(lapide == ' '){ // lapide falsa => registro não excluído
-                    n++;
-                    
                     // lê registro em bytes e converte para objeto 
                     byte[] data = new byte[regSize];
                     arq.read(data);
@@ -173,7 +166,9 @@ public class CRUD {
                     obj.fromByteArray(data);
 
                     // imprime registro
-                    System.out.println("\n"+n+"\n"+obj);
+                    System.out.println("\n"+obj);
+                } else{
+                    arq.skipBytes(regSize); // pula registro
                 }
                 
                 pos = arq.getFilePointer(); // início do próximo registro (lápide)
@@ -182,6 +177,78 @@ public class CRUD {
             System.err.println("Erro ao ler registros no arquivo");
             ioe.printStackTrace();
         }
+    }
+    /**
+     * Conta todos os registros válidos do arquivo (lapide falsa)
+     * @return int qtd de registros 
+     */
+    public int totalValid() {
+        int qtd = 0;
+        
+        try{
+            long pos, arqLen = arq.length();
+            byte lapide;
+            int regSize;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            arq.seek(0); 
+            arq.skipBytes(Integer.BYTES);
+            pos = arq.getFilePointer();
+            
+            while(pos != arqLen){
+                // lê primeiros dados
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+                
+                if(lapide == ' '){ // lapide falsa => registro não excluído
+                    qtd++;
+                }
+                
+                arq.skipBytes(regSize);
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+        } catch(IOException ioe){
+            System.err.println("Erro ao contar registros validos no arquivo");
+            ioe.printStackTrace();
+        }
+
+        return qtd;
+    }
+    /**
+     * Conta todos os registros não válidos do arquivo (lapide verdadeira)
+     * @return int qtd de registros 
+     */
+    public int totalNotValid() {
+        int qtd = 0;
+        
+        try{
+            long pos, arqLen = arq.length();
+            byte lapide;
+            int regSize;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            arq.seek(0); 
+            arq.skipBytes(Integer.BYTES);
+            pos = arq.getFilePointer();
+            
+            while(pos != arqLen){
+                // lê primeiros dados
+                lapide = arq.readByte();
+                regSize = arq.readInt();
+                
+                if(lapide == '*'){ // lapide verdadeira => registro excluído
+                    qtd++;
+                }
+                
+                arq.skipBytes(regSize);
+                pos = arq.getFilePointer(); // início do próximo registro (lápide)
+            }
+        } catch(IOException ioe){
+            System.err.println("Erro ao contar registros excluidos no arquivo");
+            ioe.printStackTrace();
+        }
+
+        return qtd;
     }
         /* CRUD */
     /**
