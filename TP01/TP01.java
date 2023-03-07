@@ -137,6 +137,8 @@ public class TP01 {
                                     else 
                                         System.out.println("com selecao por substituicao**"); 
 
+                                    System.out.println("Ordenando pelo duration_ms");
+                                   
                                     arquivo.sort(opc2);
 
                                     break;

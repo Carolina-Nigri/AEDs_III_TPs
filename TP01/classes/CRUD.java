@@ -1,10 +1,11 @@
 /** Pacotes **/
 package TP01.classes;
-import TP01.classes.Sort;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.EOFException;
 import java.io.File;
+import java.util.ArrayList;
 
 /** Classe CRUD **/
 public class CRUD {
@@ -36,7 +37,9 @@ public class CRUD {
         
         try{
             arq.seek(0);
-            arq.writeInt(0); // ultimoID inicial
+
+            if(arq.length() == 0)
+                arq.writeInt(0); // ultimoID inicial
         } catch(IOException ioe){
             System.err.println("Erro ao inicializar CRUD");
             ioe.printStackTrace();
@@ -465,5 +468,47 @@ public class CRUD {
         } else if(tipo == 3){ // Selecao por substituicao
             ordena.intercalaSubstituicao(this.path);
         }
+    }
+    /**
+     * Lê n registros, formando um bloco de tamanho n, salva em um array de Musica e 
+     * retorna o bloco e a posicao do proximo bloco a ser buscado
+     * @param bloco array de Musica com n registros (um bloco) 
+     * @param pos posicao inicial do arquivo (primeiro registro do bloco)
+     * @return long pos posicao final do arquivo (primeiro registro do próximo bloco)
+     */
+    public ArrayList<Musica> getBlock(long pos, int tam) {
+        ArrayList<Musica> bloco = new ArrayList<Musica>();
+
+        try{
+            // long arqLen = (arq.length() - 1);
+            int regSize, i = 0;
+
+            // posiciona ponteiro no início do bloco
+            arq.seek(pos); 
+
+            while(i < tam){
+                try{
+                    // lê primeiros dados
+                    arq.skipBytes(1); // pula a lápide
+                    regSize = arq.readInt();
+
+                    // lê registro em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    bloco.add( new Musica() );
+                    bloco.get(i).fromByteArray(data);
+
+                    i++;
+                    pos = arq.getFilePointer(); // início do próximo registro (lápide)
+                } catch(EOFException eofe){
+                    break;
+                }
+            }
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao ler bloco do arquivo");
+            ioe.printStackTrace();
+        }
+
+        return bloco;
     }
 }
