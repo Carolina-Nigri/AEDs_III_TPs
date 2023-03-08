@@ -35,6 +35,8 @@ public class Sort {
 
         distribuicao(pathCRUD);
 
+        // intercalações
+
         if(!deleteTmpFiles())
             System.err.println("Erro ao deletar arquivos temporarios");
     }
@@ -107,12 +109,10 @@ public class Sort {
 
             while(posCrud < crudLen){ // lê até fim do arquivo 
                 // intercala arquivos tmp pra escrever blocos
-                for(int i = 1; i <= (ARQ/2) && posCrud < crudLen; i++){
+                for(int i = 0; i < (ARQ/2) && posCrud < crudLen; i++){
                     // lê um bloco
                     ArrayList<Musica> bloco = crud.getBlock(posCrud, TAM);
                    
-                    // System.out.println( bloco.toString() );
-
                     // ordena em memória principal
                     quicksort( bloco, 0, (bloco.size() - 1) );
                     
@@ -122,7 +122,7 @@ public class Sort {
                         byte[] regByte = bloco.get(j).toByteArray();
                         
                         int regSize = regByte.length;
-                        posCrud += regSize; // atualiza pos no arquivo CRUD
+                        posCrud += 1 + Integer.BYTES + regSize; // atualiza pos no arquivo CRUD
                         
                         tmp[i].write(regByte);
 
