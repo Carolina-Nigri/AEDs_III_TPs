@@ -33,9 +33,9 @@ public class Sort {
     public void intercalaComum(String pathCRUD) {
         createTmpFiles();
 
-        distribuicao(pathCRUD);
+        distribuir(pathCRUD);
 
-        // intercalações
+        intercalar(pathCRUD);
 
         if(!deleteTmpFiles())
             System.err.println("Erro ao deletar arquivos temporarios");
@@ -47,44 +47,11 @@ public class Sort {
         
     }
         /* Auxiliares */
-    /**
-     * Cria arquivos temporarios (qtd = ARQ) 
-     */
-    private void createTmpFiles() {
-        for(int i = 1; i <= ARQ; i++){
-            try{
-                RandomAccessFile tmp = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
-                tmp.close();
-            } catch(FileNotFoundException fnfe){
-                System.err.println("Caminho de arquivo temporario nao encontrado");
-                fnfe.printStackTrace();
-            } catch(IOException ioe){
-                System.err.println("Erro de I/O ao criar arquivo temporario para ordenacao");
-                ioe.printStackTrace();
-            }
-        }
-    }
-    /**
-     * Deleta arquivos temporarios (qtd = ARQ) 
-     * @return true se conseguir deletar, false caso contrario
-     */
-    private boolean deleteTmpFiles() {
-        boolean sucesso = false;
-
-        for(int i = 1; i <= ARQ; i++){
-            File tmp = new File(PATH + "tmp"+i+".db");
-        
-            if(tmp.delete())
-                sucesso = true;
-        }
-
-        return sucesso;
-    }
-    /**
+        /**
      * Distribui blocos de Musica nos ARQ/2 arquivos temporários, de forma alternada
      * @param pathCRUD String do caminho do arquivo original a ser ordenado 
      */
-    private void distribuicao(String pathCRUD) {
+    private void distribuir(String pathCRUD) {
         RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
 
         // Abre metade dos arquivos tmp 
@@ -124,6 +91,8 @@ public class Sort {
                         int regSize = regByte.length;
                         posCrud += 1 + Integer.BYTES + regSize; // atualiza pos no arquivo CRUD
                         
+                        tmp[i].writeByte(' ');
+                        tmp[i].writeInt(regSize);
                         tmp[i].write(regByte);
 
                         j++;
@@ -137,6 +106,66 @@ public class Sort {
             System.err.println("Erro de I/O ao ler do arquivo original na distribuicao");
             ioe.printStackTrace();
         }
+    }
+
+    private void intercalar(String pathCRUD) {
+        CRUD crud = new CRUD(pathCRUD);
+        RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
+        int tamBloco = TAM, 
+            qtdReg = crud.totalValid();
+
+        for(int i = 0; i < (ARQ/2); i++){
+            tmp[i] = new RandomAccessFile(PATH + "tmp"+(i+1)+".db", "rw");
+            tmp[i].seek(0);
+        }    
+
+        while(tamBloco < qtdReg){
+            int n = 1;
+            int blocks = countBlockTmp(tamBloco, n);
+            
+            for(int j = 0; ;){
+                for(int i = 1; i <= blocks; i++){
+                    if(i % (ARQ/2) == 0){
+
+                    } else{
+
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Cria arquivos temporarios (qtd = ARQ) 
+     */
+    private void createTmpFiles() {
+        for(int i = 1; i <= ARQ; i++){
+            try{
+                RandomAccessFile tmp = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
+                tmp.close();
+            } catch(FileNotFoundException fnfe){
+                System.err.println("Caminho de arquivo temporario nao encontrado");
+                fnfe.printStackTrace();
+            } catch(IOException ioe){
+                System.err.println("Erro de I/O ao criar arquivo temporario para ordenacao");
+                ioe.printStackTrace();
+            }
+        }
+    }
+    /**
+     * Deleta arquivos temporarios (qtd = ARQ) 
+     * @return true se conseguir deletar, false caso contrario
+     */
+    private boolean deleteTmpFiles() {
+        boolean sucesso = false;
+
+        for(int i = 1; i <= ARQ; i++){
+            File tmp = new File(PATH + "tmp"+i+".db");
+        
+            if(tmp.delete())
+                sucesso = true;
+        }
+
+        return sucesso;
     }
     /**
      * Quicksort de um bloco de Musica em memoria principal
