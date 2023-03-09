@@ -108,7 +108,7 @@ public class Sort {
         }
     }
 
-    private void intercalar(String pathCRUD) {
+    private void intercalar(String pathCRUD) throws Exception {
         CRUD crud = new CRUD(pathCRUD);
         RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
         int tamBloco = TAM, 
@@ -119,20 +119,91 @@ public class Sort {
             tmp[i].seek(0);
         }    
 
+        int e = 1, s = 3; // indica tmps de entrada/saida
+        
+        int blocks = countBlockTmp(tamBloco, e);
         while(tamBloco < qtdReg){
-            int n = 1;
-            int blocks = countBlockTmp(tamBloco, n);
+            long pos = 0;
             
-            for(int j = 0; ;){
-                for(int i = 1; i <= blocks; i++){
-                    if(i % (ARQ/2) == 0){
+            for(int i = 1; i <= blocks; i++){
+                // le e compara registros
 
-                    } else{
-
+                if(i % (ARQ/2) == 1){ // escreve 2 blocos no tmp 1 ou 3
+                    if(e == 1){ 
+                        // escreve 2 blocos no tmp 3
+                    } else if(e == 3){
+                        // escreve 2 blocos no tmp 1
+                    }
+                } else{ // escreve 2 blocos no tmp 2 ou 4
+                    if(e == 1){ 
+                        // escreve 2 blocos no tmp 4
+                    } else if(e == 3){
+                        // escreve 2 blocos no tmp 2
                     }
                 }
             }
+
+            if(e == 1){ 
+                e = 3;
+                s = 1;
+            } else if(e == 3){ 
+                e = 1;
+                s = 3;
+            }
+                
+            tamBloco *= (ARQ/2);
+            blocks = countBlockTmp(tamBloco, e);
         }
+
+        // arquivo ordenado ta no tmp (e)
+    }
+
+    public int countBlockTmp(int tamBloco, int n) {
+        // contar quantos blocos no tmp n
+    }
+
+    public ArrayList<Musica> getBlock(long pos, int tam, int e) {
+        ArrayList<Musica> bloco = new ArrayList<Musica>();
+        RandomAccessFile[] tmp = new RandomAccessFile[ARQ/2];
+        
+        for(int i = 0; i < (ARQ/2); i++){
+            tmp[i] = new RandomAccessFile(PATH + "tmp"+(e)+".db", "rw");
+            tmp[i].seek(0);
+            e++;
+        }
+        
+        try{
+            int regSize, i = 0;
+
+            // posiciona ponteiro no início do bloco
+            tmp1.seek(pos); 
+            tmp2.seek(pos); 
+            for(){ // 2 arquivos tmp
+            while(i < tam){
+                try{
+                    // lê primeiros dados
+                    arq.skipBytes(1); // pula a lápide
+                    regSize = arq.readInt();
+
+                    // lê registro em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    bloco.add( new Musica() );
+                    bloco.get(i).fromByteArray(data);
+
+                    i++;
+                    pos = arq.getFilePointer(); // início do próximo registro (lápide)
+                } catch(EOFException eofe){
+                    break;
+                }
+            }
+        }
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura/escrita ao ler bloco do arquivo");
+            ioe.printStackTrace();
+        }
+
+        return bloco;
     }
     /**
      * Cria arquivos temporarios (qtd = ARQ) 
