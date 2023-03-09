@@ -3,6 +3,7 @@ package TP01.classes;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
@@ -99,6 +100,11 @@ public class Sort {
                     }
                 }
             }
+
+            // fecha tmps
+            for(int i = 0; i < (ARQ/2); i++){
+                tmp[i].close();
+            }
         } catch(FileNotFoundException fnfe){
             System.err.println("Arquivo original nao encontrado");
             fnfe.printStackTrace();
@@ -108,103 +114,147 @@ public class Sort {
         }
     }
 
-    private void intercalar(String pathCRUD) throws Exception {
-        CRUD crud = new CRUD(pathCRUD);
-        RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
-        int tamBloco = TAM, 
-            qtdReg = crud.totalValid();
-
-        for(int i = 0; i < (ARQ/2); i++){
-            tmp[i] = new RandomAccessFile(PATH + "tmp"+(i+1)+".db", "rw");
-            tmp[i].seek(0);
-        }    
-
-        int e = 1, s = 3; // indica tmps de entrada/saida
-        
-        int blocks = countBlockTmp(tamBloco, e);
-        while(tamBloco < qtdReg){
-            long pos = 0;
+    private void intercalar(String pathCRUD) {
+        try{
+            CRUD crud = new CRUD(pathCRUD);
             
-            for(int i = 1; i <= blocks; i++){
-                // le e compara registros
+            RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
+            for(int i = 0; i < ARQ; i++){
+                tmp[i] = new RandomAccessFile(PATH + "tmp"+(i+1)+".db", "rw");
+                tmp[i].seek(0);
+            }    
+            
+            int tamBloco = TAM, 
+                qtdReg = crud.totalValid();
+            int e = 1, s = 3; // indica tmps de entrada/saida
+            
+            int blocks = countBlockTmp(tamBloco, e);
+            while(tamBloco < qtdReg){
+                long pos = 0;
+                
+                for(int i = 1; i <= blocks; i++){
+                    // le e compara registros
+                    byte[] bloco = readBlock(tamBloco, e, e+1, pos); 
+                    pos += bloco.length;
 
-                if(i % (ARQ/2) == 1){ // escreve 2 blocos no tmp 1 ou 3
-                    if(e == 1){ 
-                        // escreve 2 blocos no tmp 3
-                    } else if(e == 3){
-                        // escreve 2 blocos no tmp 1
-                    }
-                } else{ // escreve 2 blocos no tmp 2 ou 4
-                    if(e == 1){ 
-                        // escreve 2 blocos no tmp 4
-                    } else if(e == 3){
-                        // escreve 2 blocos no tmp 2
+                    if(i % (ARQ/2) == 1){
+                        if(e == 1){  // escreve 2 blocos no tmp 3
+
+                        } else if(e == 3){ // escreve 2 blocos no tmp 1
+                        
+                        }
+                    } else{ 
+                        if(e == 1){ // escreve 2 blocos no tmp 4
+                        
+                        } else if(e == 3){ // escreve 2 blocos no tmp 2
+                        
+                        }
                     }
                 }
+
+                if(e == 1){ 
+                    e = 3;
+                    s = 1;
+                } else if(e == 3){ 
+                    e = 1;
+                    s = 3;
+                }
+                    
+                tamBloco *= (ARQ/2);
+                blocks = countBlockTmp(tamBloco, e);
             }
 
-            if(e == 1){ 
-                e = 3;
-                s = 1;
-            } else if(e == 3){ 
-                e = 1;
-                s = 3;
+            // arquivo ordenado ta no tmp (e)
+
+            for(int i = 0; i < ARQ; i++){
+                tmp[i].close();
             }
-                
-            tamBloco *= (ARQ/2);
-            blocks = countBlockTmp(tamBloco, e);
+        } catch(Exception e){
+            // TODO: handle exception
         }
-
-        // arquivo ordenado ta no tmp (e)
     }
 
-    public int countBlockTmp(int tamBloco, int n) {
-        // contar quantos blocos no tmp n
-    }
-
-    public ArrayList<Musica> getBlock(long pos, int tam, int e) {
-        ArrayList<Musica> bloco = new ArrayList<Musica>();
-        RandomAccessFile[] tmp = new RandomAccessFile[ARQ/2];
-        
-        for(int i = 0; i < (ARQ/2); i++){
-            tmp[i] = new RandomAccessFile(PATH + "tmp"+(e)+".db", "rw");
-            tmp[i].seek(0);
-            e++;
-        }
+    private int countBlockTmp(int tamBloco, int i) {
+        int b = 0;
         
         try{
-            int regSize, i = 0;
-
-            // posiciona ponteiro no início do bloco
-            tmp1.seek(pos); 
-            tmp2.seek(pos); 
-            for(){ // 2 arquivos tmp
-            while(i < tam){
+            RandomAccessFile tmp = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
+    
+            tmp.seek(0);
+            long pos = 0, tmpLen = tmp.length() - 1;
+            
+            while(pos < tmpLen){
                 try{
-                    // lê primeiros dados
-                    arq.skipBytes(1); // pula a lápide
-                    regSize = arq.readInt();
+                    int n = 0;
+                    int regSize;
+                
+                    while(n < tamBloco){
+                        tmp.skipBytes(1); // pula a lápide
+                        regSize = tmp.readInt();
+                        tmp.skipBytes(regSize); // pula registro
 
-                    // lê registro em bytes e converte para objeto 
-                    byte[] data = new byte[regSize];
-                    arq.read(data);
-                    bloco.add( new Musica() );
-                    bloco.get(i).fromByteArray(data);
+                        n++;
+                    }
 
-                    i++;
-                    pos = arq.getFilePointer(); // início do próximo registro (lápide)
+                    pos = tmp.getFilePointer();
+
+                    b++; // conta blocos
                 } catch(EOFException eofe){
                     break;
                 }
             }
+
+            tmp.close();
+        } catch(Exception e){
+            // TODO: handle exception
         }
-        } catch(IOException ioe){
-            System.err.println("Erro de leitura/escrita ao ler bloco do arquivo");
-            ioe.printStackTrace();
+
+        return b;
+    }
+
+    private byte[] readBlock(int tamBloco, int i, int j, long pos) {
+        byte[] bloco = null;
+
+        try{
+            RandomAccessFile[] tmp = new RandomAccessFile[ARQ/2];
+            tmp[0] = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
+            tmp[1] = new RandomAccessFile(PATH + "tmp"+j+".db", "rw");
+            
+            byte lapide;
+            int regSize, n = 0;
+
+            // posiciona ponteiro no início do bloco
+            tmp[0].seek(pos); 
+            tmp[1].seek(pos); 
+
+            while(n < tamBloco){
+                try{
+                    for(int k = 0; k < 2; k++){
+                        lapide = tmp[k].readByte();
+                        regSize = tmp[k].readInt();
+    
+                        // lê registro em bytes e converte para objeto 
+                        byte[] data = new byte[regSize];
+                        tmp[k].read(data);
+
+                        
+                        n++;
+                        pos = tmp[k].getFilePointer(); // início do próximo registro (lápide)
+                    }
+                } catch(EOFException eofe){
+                    break;
+                }
+            }
+
+            tmp[0].close();
+            tmp[1].close();
+        } catch(Exception e){
+            // TODO: handle exception
         }
 
         return bloco;
     }
+
     /**
      * Cria arquivos temporarios (qtd = ARQ) 
      */
