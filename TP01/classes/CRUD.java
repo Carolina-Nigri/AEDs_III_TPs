@@ -76,7 +76,7 @@ public class CRUD {
     /**
      * Refaz o arquivo, retirando os registros com lapide verdadeira (excluidos)
      */
-    public void remakeFile() {
+    public void removeInvalid() {
         try{
             String tmpPath = "TP01/data/musicasTMP.db";
             RandomAccessFile tmp = new RandomAccessFile(tmpPath, "rw");
@@ -139,6 +139,49 @@ public class CRUD {
             fnfe.printStackTrace();
         } catch(IOException ioe){
             System.err.println("Erro ao ler registros no arquivo");
+            ioe.printStackTrace();
+        }
+    }
+    
+    public void copyTmp(String tmpPath) {
+        try{
+            RandomAccessFile tmp = new RandomAccessFile(tmpPath, "rw");
+            
+            long pos = 0, tmpLen = tmp.length() - 1;
+            int regSize;
+            byte lapide;
+            byte[] data;
+            
+            // posiciona ponteiro depois do ultimoID
+            arq.seek(0);
+            arq.skipBytes(Integer.BYTES); 
+            
+            tmp.seek(0);
+            
+            while(pos < tmpLen){
+                try{
+                    lapide = tmp.readByte();
+                    arq.writeByte(lapide);
+                   
+                    regSize = tmp.readInt();
+                    arq.writeInt(regSize);
+                    
+                    data = new byte[regSize];
+                    tmp.read(data);
+                    arq.write(data);
+                    
+                    pos = tmp.getFilePointer(); 
+                } catch(EOFException eofe){
+                    break;
+                }
+            }
+
+            tmp.close();
+        } catch(FileNotFoundException fnfe){
+            System.err.println("Erro ao buscar arquivo temporario para copiar");
+            fnfe.printStackTrace();
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler registros no arquivo tmp");
             ioe.printStackTrace();
         }
     }
@@ -459,7 +502,7 @@ public class CRUD {
     public void sort(int tipo) {
         Sort ordena = new Sort();
         
-        this.remakeFile();
+        this.removeInvalid();
         
         if(tipo == 1){ // Comum
             ordena.intercalaComum(this.path);

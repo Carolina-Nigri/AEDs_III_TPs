@@ -12,7 +12,7 @@ public class Sort {
     /* Atributos (constantes) */
     protected final String PATH = "TP01/data/";
     protected final int TAM = 10; // qtd de registros p/bloco
-    protected final int ARQ = 4; // qtd de arquivos
+    protected final int WAY = 2; // qtd de caminhos
 
     /* Getters */
     public String getPATH() {
@@ -21,8 +21,8 @@ public class Sort {
     public int getTAM() {
         return TAM;
     }
-    public int getARQ() {
-        return ARQ;
+    public int getWAY() {
+        return WAY;
     }
 
     /* Métodos */
@@ -49,15 +49,15 @@ public class Sort {
     }
         /* Auxiliares */
         /**
-     * Distribui blocos de Musica nos ARQ/2 arquivos temporários, de forma alternada
+     * Distribui blocos de Musica nos WAY arquivos temporários, de forma alternada
      * @param pathCRUD String do caminho do arquivo original a ser ordenado 
      */
     private void distribuir(String pathCRUD) {
-        RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
+        RandomAccessFile[] tmp = new RandomAccessFile[WAY];
 
         // Abre metade dos arquivos tmp 
         try{ 
-            for(int i = 0; i < (ARQ/2); i++){
+            for(int i = 0; i < WAY; i++){
                 tmp[i] = new RandomAccessFile(PATH + "tmp"+(i+1)+".db", "rw");
                 tmp[i].seek(0);
             }
@@ -77,7 +77,7 @@ public class Sort {
 
             while(posCrud < crudLen){ // lê até fim do arquivo 
                 // intercala arquivos tmp pra escrever blocos
-                for(int i = 0; i < (ARQ/2) && posCrud < crudLen; i++){
+                for(int i = 0; i < WAY && posCrud < crudLen; i++){
                     // lê um bloco
                     ArrayList<Musica> bloco = crud.getBlock(posCrud, TAM);
                    
@@ -102,7 +102,7 @@ public class Sort {
             }
 
             // fecha tmps
-            for(int i = 0; i < (ARQ/2); i++){
+            for(int i = 0; i < WAY; i++){
                 tmp[i].close();
             }
         } catch(FileNotFoundException fnfe){
@@ -118,59 +118,122 @@ public class Sort {
         try{
             CRUD crud = new CRUD(pathCRUD);
             
-            RandomAccessFile[] tmp = new RandomAccessFile[ARQ];
-            for(int i = 0; i < ARQ; i++){
+            RandomAccessFile[] tmp = new RandomAccessFile[WAY*2];
+            for(int i = 0; i < (WAY*2); i++){
                 tmp[i] = new RandomAccessFile(PATH + "tmp"+(i+1)+".db", "rw");
                 tmp[i].seek(0);
             }    
             
             int tamBloco = TAM, 
                 qtdReg = crud.totalValid();
-            int e = 1, s = 3; // indica tmps de entrada/saida
+            int e = 1, s = WAY+1; // indica tmps de entrada/saida
             
-            int blocks = countBlockTmp(tamBloco, e);
+            int b = countBlockTmp(tamBloco, e);
             while(tamBloco < qtdReg){
-                long pos = 0;
+                // posicoes dos arquivos tmp 
+                long[] pos = new long[WAY*2];
+                for(int i = 0; i < WAY*2; i++){
+                    pos[i] = 0;
+                }
                 
-                for(int i = 1; i <= blocks; i++){
-                    // le e compara registros
-                    byte[] bloco = readBlock(tamBloco, e, e+1, pos); 
-                    pos += bloco.length;
+                for(int i = 1; i <= b; i++){
+                    int n = 0;
 
-                    if(i % (ARQ/2) == 1){
-                        if(e == 1){  // escreve 2 blocos no tmp 3
+                    tmp[e - 1].seek(pos[e - 1]); // procura pos do bloco
+                    tmp[e].seek(pos[e]);
 
-                        } else if(e == 3){ // escreve 2 blocos no tmp 1
-                        
+                    tmp[s - 1].seek(pos[s - 1]); // procura pos do bloco
+                    tmp[s].seek(pos[s]);
+                    
+                    while(n < tamBloco){
+                        try {
+                            // le registro em bytes do tmp[j] e converte p/Musica
+                            tmp[e - 1].skipBytes(1);
+                            int regSize1 = tmp[e - 1].readInt();
+                            Musica msc1 = new Musica();
+                            byte[] mscB1 = new byte[regSize1];
+                            tmp[e - 1].read(mscB1);
+                            msc1.fromByteArray(mscB1);
+                            // System.out.println(msc1);
+
+                            tmp[e].skipBytes(1);
+                            int regSize2 = tmp[e].readInt();
+                            Musica msc2 = new Musica();
+                            byte[] mscB2 = new byte[regSize2];
+                            tmp[e].read(mscB2);
+                            msc2.fromByteArray(mscB2);
+                            // System.out.println(msc2);
+                            
+                            n++;
+
+                            if(i % WAY == 1){
+                                tmp[s - 1].writeByte(' ');
+
+                                if(msc1.getDuration_ms() <= msc2.getDuration_ms()){  
+                                    tmp[s - 1].writeByte(mscB1.length);
+                                    tmp[s - 1].write(mscB1);
+
+
+                                    pos[e - 1] = tmp[e - 1].getFilePointer();
+
+                                    tmp[e].seek(pos[e]);
+                                } else{
+                                    tmp[s - 1].writeByte(mscB2.length);
+                                    tmp[s - 1].write(mscB2);
+
+                                    pos[e] = tmp[e].getFilePointer();
+
+                                    tmp[e-1].seek(pos[e-1]);
+                                }
+
+                                pos[s - 1] = tmp[s - 1].getFilePointer();
+
+                            } else{
+                                tmp[s].writeByte(' ');
+                                
+                                if(msc1.getDuration_ms() <= msc2.getDuration_ms()){  
+                                    tmp[s].writeByte(mscB1.length);
+                                    tmp[s].write(mscB1);
+
+                                    pos[e - 1] = tmp[e - 1].getFilePointer();
+
+                                    tmp[e].seek(pos[e]);
+                                } else{
+                                    tmp[s].writeByte(mscB2.length);
+                                    tmp[s].write(mscB2);
+
+                                    pos[e] = tmp[e].getFilePointer();
+
+                                    tmp[e-1].seek(pos[e-1]);
+                                }
+                                pos[s] = tmp[s].getFilePointer();
+                            } 
+
+                        } catch (EOFException eofe) {
+                            break;
                         }
-                    } else{ 
-                        if(e == 1){ // escreve 2 blocos no tmp 4
-                        
-                        } else if(e == 3){ // escreve 2 blocos no tmp 2
-                        
-                        }
-                    }
+                    } 
                 }
 
                 if(e == 1){ 
-                    e = 3;
-                    s = 1;
-                } else if(e == 3){ 
-                    e = 1;
-                    s = 3;
+                    e = (WAY+1); s = 1;
+                } else{ 
+                    e = 1; s = (WAY+1);
                 }
                     
-                tamBloco *= (ARQ/2);
-                blocks = countBlockTmp(tamBloco, e);
+                tamBloco *= WAY;
+                b = countBlockTmp(tamBloco, e);
             }
 
             // arquivo ordenado ta no tmp (e)
+            crud.copyTmp(PATH + "tmp"+(e)+".db");
 
-            for(int i = 0; i < ARQ; i++){
+            for(int i = 0; i < WAY*2; i++){
                 tmp[i].close();
             }
-        } catch(Exception e){
-            // TODO: handle exception
+        } catch(Exception exc){
+            System.err.println("Excecao na intercalacao");
+            exc.printStackTrace();
         }
     }
 
@@ -205,61 +268,21 @@ public class Sort {
             }
 
             tmp.close();
-        } catch(Exception e){
-            // TODO: handle exception
+        } catch(FileNotFoundException fnfe){
+            System.err.println("Caminho de arquivo temporario nao encontrado");
+            fnfe.printStackTrace();
+        } catch(IOException ioe){
+            System.err.println("Erro de leitura ao contar blocos do arquivo temporario");
+            ioe.printStackTrace();
         }
 
         return b;
     }
-
-    private byte[] readBlock(int tamBloco, int i, int j, long pos) {
-        byte[] bloco = null;
-
-        try{
-            RandomAccessFile[] tmp = new RandomAccessFile[ARQ/2];
-            tmp[0] = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
-            tmp[1] = new RandomAccessFile(PATH + "tmp"+j+".db", "rw");
-            
-            byte lapide;
-            int regSize, n = 0;
-
-            // posiciona ponteiro no início do bloco
-            tmp[0].seek(pos); 
-            tmp[1].seek(pos); 
-
-            while(n < tamBloco){
-                try{
-                    for(int k = 0; k < 2; k++){
-                        lapide = tmp[k].readByte();
-                        regSize = tmp[k].readInt();
-    
-                        // lê registro em bytes e converte para objeto 
-                        byte[] data = new byte[regSize];
-                        tmp[k].read(data);
-
-                        
-                        n++;
-                        pos = tmp[k].getFilePointer(); // início do próximo registro (lápide)
-                    }
-                } catch(EOFException eofe){
-                    break;
-                }
-            }
-
-            tmp[0].close();
-            tmp[1].close();
-        } catch(Exception e){
-            // TODO: handle exception
-        }
-
-        return bloco;
-    }
-
     /**
-     * Cria arquivos temporarios (qtd = ARQ) 
+     * Cria arquivos temporarios (qtd = WAY*2) 
      */
     private void createTmpFiles() {
-        for(int i = 1; i <= ARQ; i++){
+        for(int i = 1; i <= WAY*2; i++){
             try{
                 RandomAccessFile tmp = new RandomAccessFile(PATH + "tmp"+i+".db", "rw");
                 tmp.close();
@@ -273,13 +296,13 @@ public class Sort {
         }
     }
     /**
-     * Deleta arquivos temporarios (qtd = ARQ) 
+     * Deleta arquivos temporarios (qtd = WAY*2) 
      * @return true se conseguir deletar, false caso contrario
      */
     private boolean deleteTmpFiles() {
         boolean sucesso = false;
 
-        for(int i = 1; i <= ARQ; i++){
+        for(int i = 1; i <= WAY*2; i++){
             File tmp = new File(PATH + "tmp"+i+".db");
         
             if(tmp.delete())
