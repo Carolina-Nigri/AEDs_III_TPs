@@ -150,8 +150,48 @@ public class Sort {
         }
     }
 
+    private long merg(ArrayList<Musica> msc , long pos, String file){
+        int menor = Integer.MAX_VALUE;
+
+        try{
+            RandomAccessFile arq = new RandomAccessFile(file, "rw");
+            while(!msc.isEmpty()){
+                int j = 0;
+                for(int i = 0; i < msc.size(); i++){
+                    if(msc.get(i).getDuration_ms() < menor){
+
+                        menor = msc.get(i).getDuration_ms();
+                        j = i;
+                    }
+                }
+                
+                byte[] mscB = msc.get(j).toByteArray();
+
+                arq.seek(pos);
+                arq.writeByte(' ');
+                arq.writeInt(mscB.length);
+                arq.write(mscB);
+
+                pos = arq.getFilePointer();
+
+                msc.remove(j);
+                menor = Integer.MAX_VALUE;
+            }
+            arq.close();
+
+        }catch(FileNotFoundException fnef){
+            System.err.println("erro ao achar o arquivo");
+        }
+        catch(IOException ioe){
+            System.err.print("Erro ao achar a poss do arquivo");
+        }
+        return pos;
+    }
+
+
     private void intercalar(String pathCRUD) {
         try{
+            ArrayList<Musica> coluna = new  ArrayList<Musica>();
             CRUD crud = new CRUD(pathCRUD);
             
             RandomAccessFile[] tmp = new RandomAccessFile[WAY*2];
@@ -192,6 +232,7 @@ public class Sort {
                             byte[] mscB1 = new byte[regSize1];
                             tmp[e - 1].read(mscB1);
                             msc1.fromByteArray(mscB1);
+                            coluna.add(msc1);
 
                             tmp[e].skipBytes(1);
                             int regSize2 = tmp[e].readInt();
@@ -199,55 +240,34 @@ public class Sort {
                             byte[] mscB2 = new byte[regSize2];
                             tmp[e].read(mscB2);
                             msc2.fromByteArray(mscB2);
+                            coluna.add(msc2);
                             
                             n++;
 
-                            if(i % WAY == 1){
-                                tmp[s - 1].writeByte(' ');
-
-                                if(msc1.getDuration_ms() <= msc2.getDuration_ms()){  
-                                    tmp[s - 1].writeByte(mscB1.length);
-                                    tmp[s - 1].write(mscB1);
-
-
-                                    pos[e - 1] = tmp[e - 1].getFilePointer();
-
-                                    tmp[e].seek(pos[e]);
-                                } else{
-                                    tmp[s - 1].writeByte(mscB2.length);
-                                    tmp[s - 1].write(mscB2);
-
-                                    pos[e] = tmp[e].getFilePointer();
-
-                                    tmp[e-1].seek(pos[e-1]);
-                                }
-
-                                pos[s - 1] = tmp[s - 1].getFilePointer();
-
-                            } else{
-                                tmp[s].writeByte(' ');
-                                
-                                if(msc1.getDuration_ms() <= msc2.getDuration_ms()){  
-                                    tmp[s].writeByte(mscB1.length);
-                                    tmp[s].write(mscB1);
-
-                                    pos[e - 1] = tmp[e - 1].getFilePointer();
-
-                                    tmp[e].seek(pos[e]);
-                                } else{
-                                    tmp[s].writeByte(mscB2.length);
-                                    tmp[s].write(mscB2);
-
-                                    pos[e] = tmp[e].getFilePointer();
-
-                                    tmp[e-1].seek(pos[e-1]);
-                                }
-                                pos[s] = tmp[s].getFilePointer();
-                            } 
+                            
 
                         } catch (EOFException eofe) {
-                            break;
+                            try {
+                                while(true){
+                                    tmp[e - 1].skipBytes(1);
+                                    int regSize1 = tmp[e - 1].readInt();
+                                    Musica msc1 = new Musica();
+                                    byte[] mscB1 = new byte[regSize1];
+                                    tmp[e - 1].read(mscB1);
+                                    msc1.fromByteArray(mscB1);
+                                    coluna.add(msc1);  
+                                }
+                            } catch (EOFException eofe2) {
+                                break;
+                            }
+
                         }
+                    }
+
+                    if(i % WAY == 1){
+                        pos[s - 1] =  merg(coluna, pos[s - 1], PATH + "tmp"+(s-1)+".db");
+                    } else{
+                        pos[s] = merg(coluna, pos[s], PATH + "tmp"+(s)+".db");
                     } 
                 }
 

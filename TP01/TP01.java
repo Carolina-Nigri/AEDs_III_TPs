@@ -44,7 +44,7 @@ public class TP01 {
 
                         String line; // linha do CSV
                         // lê 100 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 100; i++){
+                        for(int i = 0; i < 101; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
@@ -127,7 +127,7 @@ public class TP01 {
                                     System.out.println("Ordenando pelo duration_ms");
                                    
                                     arquivo.sort(opc2);
-                                    // arquivo.printAll();
+                                    arquivo.printAll();
 
                                     break;
                                 }
