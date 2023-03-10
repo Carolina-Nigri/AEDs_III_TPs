@@ -104,19 +104,6 @@ public class TP01 {
 
                         break;
                     } case 5: { // Ordenação (submenu)
-                        /* TESTES */
-                        // arquivo.printAll();
-                        // int v = 0, n = 0;
-                        // v = arquivo.totalValid();
-                        // System.out.println("\nValidos: "+v);
-                        // n = arquivo.totalNotValid();
-                        // System.out.println("Nao validos: "+n);
-                        // System.out.print("\nRemake file ['s']? ");
-                        // String c = br.readLine();
-                        // if(c.charAt(0)=='s'){
-                        //     arquivo.remakeFile();
-                        // }
-
                         int opc2 = -1;
 
                         do{ 
@@ -140,7 +127,7 @@ public class TP01 {
                                     System.out.println("Ordenando pelo duration_ms");
                                    
                                     arquivo.sort(opc2);
-                                    arquivo.printAll();
+                                    // arquivo.printAll();
 
                                     break;
                                 }

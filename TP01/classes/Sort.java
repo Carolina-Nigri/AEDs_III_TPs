@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class Sort {
     /* Atributos (constantes) */
     protected final String PATH = "TP01/data/";
-    protected final int TAM = 10; // qtd de registros p/bloco
+    protected final int TAM = 4; // qtd de registros p/bloco
     protected final int WAY = 2; // qtd de caminhos
 
     /* Getters */
@@ -38,8 +38,8 @@ public class Sort {
 
         intercalar(pathCRUD);
 
-        if(!deleteTmpFiles())
-            System.err.println("Erro ao deletar arquivos temporarios");
+        // if(!deleteTmpFiles())
+        //     System.err.println("Erro ao deletar arquivos temporarios");
     }
     public void intercalaBlocosVar(String pathCRUD) {
         
@@ -48,7 +48,43 @@ public class Sort {
         
     }
         /* Auxiliares */
-        /**
+    public void printAll(String tmpPath) {
+        try{
+            RandomAccessFile tmp = new RandomAccessFile(tmpPath, "rw");
+            long pos, tmpLen = tmp.length();
+            int regSize;
+
+            // posiciona ponteiro no início, pula cabeçalho e salva posição
+            tmp.seek(0); 
+            pos = tmp.getFilePointer();
+            
+            while(pos != tmpLen){
+                // lê primeiros dados
+                tmp.skipBytes(1);
+                regSize = tmp.readInt();
+                
+                // lê registro em bytes e converte para objeto 
+                byte[] data = new byte[regSize];
+                tmp.read(data);
+                Musica obj = new Musica();
+                obj.fromByteArray(data);
+
+                // imprime registro
+                System.out.println("\n"+obj);
+                
+                pos = tmp.getFilePointer(); // início do próximo registro (lápide)
+            }
+
+            tmp.close();
+        } catch(FileNotFoundException fnfe){
+            
+            fnfe.printStackTrace();
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler registros no arquivo");
+            ioe.printStackTrace();
+        }
+    }
+    /**
      * Distribui blocos de Musica nos WAY arquivos temporários, de forma alternada
      * @param pathCRUD String do caminho do arquivo original a ser ordenado 
      */
@@ -136,6 +172,8 @@ public class Sort {
                     pos[i] = 0;
                 }
                 
+                // System.out.println(tamBloco +  " "+e + " "+b);
+
                 for(int i = 1; i <= b; i++){
                     int n = 0;
 
@@ -154,7 +192,6 @@ public class Sort {
                             byte[] mscB1 = new byte[regSize1];
                             tmp[e - 1].read(mscB1);
                             msc1.fromByteArray(mscB1);
-                            // System.out.println(msc1);
 
                             tmp[e].skipBytes(1);
                             int regSize2 = tmp[e].readInt();
@@ -162,7 +199,6 @@ public class Sort {
                             byte[] mscB2 = new byte[regSize2];
                             tmp[e].read(mscB2);
                             msc2.fromByteArray(mscB2);
-                            // System.out.println(msc2);
                             
                             n++;
 
@@ -220,10 +256,15 @@ public class Sort {
                 } else{ 
                     e = 1; s = (WAY+1);
                 }
-                    
+                
                 tamBloco *= WAY;
                 b = countBlockTmp(tamBloco, e);
+                // System.out.println(tamBloco +  " "+e + " "+b); 
+                // valor de b dando errado
             }
+
+            // System.out.println(e);
+            // printAll(PATH + "tmp"+(e)+".db");
 
             // arquivo ordenado ta no tmp (e)
             crud.copyTmp(PATH + "tmp"+(e)+".db");
