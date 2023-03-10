@@ -213,7 +213,8 @@ public class CRUD {
                     obj.fromByteArray(data);
 
                     // imprime registro
-                    System.out.println("\n"+obj);
+                    // System.out.println("\n"+obj);
+                    System.out.println(obj.getDuration_ms());
                 } else{
                     arq.skipBytes(regSize); // pula registro
                 }

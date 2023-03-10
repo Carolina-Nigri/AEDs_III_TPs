@@ -43,14 +43,14 @@ public class TP01 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
-                        // lê 100 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 101; i++){
+                        // lê 35000 musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < 35000; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
                             arquivo.create(musica); 
                         }
-                        System.out.println("Base de dados carregada. 100 registros criados.");
+                        System.out.println("Base de dados carregada. 35000 registros criados.");
 
                         break;
                     } case 1: { // Create

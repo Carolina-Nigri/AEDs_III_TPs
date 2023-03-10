@@ -70,7 +70,8 @@ public class Sort {
                 obj.fromByteArray(data);
 
                 // imprime registro
-                System.out.println("\n"+obj);
+                // System.out.println("\n"+obj);
+                System.out.println(obj.getDuration_ms());
                 
                 pos = tmp.getFilePointer(); // início do próximo registro (lápide)
             }
@@ -151,21 +152,20 @@ public class Sort {
     }
 
     private long merg(ArrayList<Musica> msc , long pos, String file){
-        int menor = Integer.MAX_VALUE;
-
         try{
             RandomAccessFile arq = new RandomAccessFile(file, "rw");
             while(!msc.isEmpty()){
-                int j = 0;
-                for(int i = 0; i < msc.size(); i++){
+                int menor = msc.get(0).getDuration_ms();
+                int minIndex = 0;
+                
+                for(int i = 1; i < msc.size(); i++){
                     if(msc.get(i).getDuration_ms() < menor){
-
                         menor = msc.get(i).getDuration_ms();
-                        j = i;
+                        minIndex = i;
                     }
                 }
                 
-                byte[] mscB = msc.get(j).toByteArray();
+                byte[] mscB = msc.get(minIndex).toByteArray();
 
                 arq.seek(pos);
                 arq.writeByte(' ');
@@ -174,11 +174,10 @@ public class Sort {
 
                 pos = arq.getFilePointer();
 
-                msc.remove(j);
-                menor = Integer.MAX_VALUE;
+                msc.remove(minIndex);
             }
+            
             arq.close();
-
         }catch(FileNotFoundException fnef){
             System.err.println("erro ao achar o arquivo");
         }
@@ -211,16 +210,13 @@ public class Sort {
                 for(int i = 0; i < WAY*2; i++){
                     pos[i] = 0;
                 }
-                
-                // System.out.println(tamBloco +  " "+e + " "+b);
 
                 for(int i = 1; i <= b; i++){
                     int n = 0;
 
                     tmp[e - 1].seek(pos[e - 1]); // procura pos do bloco
                     tmp[e].seek(pos[e]);
-
-                    tmp[s - 1].seek(pos[s - 1]); // procura pos do bloco
+                    tmp[s - 1].seek(pos[s - 1]);
                     tmp[s].seek(pos[s]);
                     
                     while(n < tamBloco){
@@ -233,6 +229,7 @@ public class Sort {
                             tmp[e - 1].read(mscB1);
                             msc1.fromByteArray(mscB1);
                             coluna.add(msc1);
+                            pos[e - 1] = tmp[e - 1].getFilePointer();
 
                             tmp[e].skipBytes(1);
                             int regSize2 = tmp[e].readInt();
@@ -241,14 +238,12 @@ public class Sort {
                             tmp[e].read(mscB2);
                             msc2.fromByteArray(mscB2);
                             coluna.add(msc2);
+                            pos[e] = tmp[e].getFilePointer();
                             
                             n++;
-
-                            
-
                         } catch (EOFException eofe) {
                             try {
-                                while(true){
+                                while(n < tamBloco){
                                     tmp[e - 1].skipBytes(1);
                                     int regSize1 = tmp[e - 1].readInt();
                                     Musica msc1 = new Musica();
@@ -256,18 +251,23 @@ public class Sort {
                                     tmp[e - 1].read(mscB1);
                                     msc1.fromByteArray(mscB1);
                                     coluna.add(msc1);  
+                                    pos[e - 1] = tmp[e - 1].getFilePointer();
+
+                                    n++;
                                 }
                             } catch (EOFException eofe2) {
                                 break;
                             }
 
+                            break;
                         }
                     }
 
+                
                     if(i % WAY == 1){
-                        pos[s - 1] =  merg(coluna, pos[s - 1], PATH + "tmp"+(s-1)+".db");
+                        pos[s - 1] =  merg(coluna, pos[s - 1], (PATH + "tmp"+(s)+".db"));
                     } else{
-                        pos[s] = merg(coluna, pos[s], PATH + "tmp"+(s)+".db");
+                        pos[s] = merg(coluna, pos[s], (PATH + "tmp"+(s+1)+".db"));
                     } 
                 }
 
@@ -279,12 +279,7 @@ public class Sort {
                 
                 tamBloco *= WAY;
                 b = countBlockTmp(tamBloco, e);
-                // System.out.println(tamBloco +  " "+e + " "+b); 
-                // valor de b dando errado
             }
-
-            // System.out.println(e);
-            // printAll(PATH + "tmp"+(e)+".db");
 
             // arquivo ordenado ta no tmp (e)
             crud.copyTmp(PATH + "tmp"+(e)+".db");

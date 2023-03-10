@@ -155,8 +155,8 @@ public class Musica {
                 artists.add(dis.readUTF());
             }
         } catch(IOException ioe){
-            System.err.println("Erro ao ler atributo a partir de bytes");
-            ioe.printStackTrace();
+            // System.err.println("Erro ao ler atributo a partir de bytes");
+            // ioe.printStackTrace();
         }
     }
         /* Database */
