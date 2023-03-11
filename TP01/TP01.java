@@ -43,14 +43,14 @@ public class TP01 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
-                        // lê 35000 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 35000; i++){
+                        // lê 10000 musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < 10000; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
                             arquivo.create(musica); 
                         }
-                        System.out.println("Base de dados carregada. 35000 registros criados.");
+                        System.out.println("Base de dados carregada. 10000 registros criados.");
 
                         break;
                     } case 1: { // Create
@@ -117,6 +117,7 @@ public class TP01 {
                                   case 2:
                                   case 3:{
                                     System.out.print("\n**Intercalacao balanceada ");
+                                    
                                     if(opc2 == 1) 
                                         System.out.println("comum**");
                                     else if(opc2 == 1) 
@@ -127,7 +128,7 @@ public class TP01 {
                                     System.out.println("Ordenando pelo duration_ms");
                                    
                                     arquivo.sort(opc2);
-                                    arquivo.printAll();
+                                    arquivo.printNDurationMs(1000);
 
                                     break;
                                 }

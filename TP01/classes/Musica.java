@@ -143,8 +143,7 @@ public class Musica {
             try{
                 this.release_date = sdf.parse(dis.readUTF()); 
             } catch(ParseException pe){
-                System.err.println("Erro ao fazer parse da data");
-                pe.printStackTrace();
+
             }
     
             this.track_id = dis.readUTF();
@@ -155,8 +154,7 @@ public class Musica {
                 artists.add(dis.readUTF());
             }
         } catch(IOException ioe){
-            // System.err.println("Erro ao ler atributo a partir de bytes");
-            // ioe.printStackTrace();
+
         }
     }
         /* Database */
