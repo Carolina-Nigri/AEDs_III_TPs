@@ -1,78 +1,148 @@
+/** Pacotes **/
 package TP02.classes;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Bucket{
+/** Classe Bucket **/
+public class Bucket {
+    /* Atributos */
+    private int pLocal, // profundidade local
+                n, // numero de chaves atuais
+                nMax, // numero maximo de chaves
+                tamPar, // tamanho fixo do par chave e endereco (bytes)
+                tamBucket; // tamanho fixo do bucket (bytes)
+    private int[] chaves; // chaves armazenadas
+    private long[] enderecos; // enderecos das chaves
 
-    private byte pLocal; // profundidade local do cesto
-    private short n; // n de pares presentes no cesto
-    private short nMax; // n máxima de pares que o cesto pode conter
-    private int[] chaves; // sequência de chaves armazenadas no cesto
-    private long[] dados; // sequência de dados correspondentes às chaves
-    private short sizePar; // size fixo do par de chave e endereco
-    private short sizeBucket; // size fixo do bucket
-
-    public Bucket(int nMax) throws Exception {
-        this(nMax, 0);
+    /* Getters e Setters */
+    public int getPLocal() {
+        return this.pLocal;
+    }
+    public void setPLocal(int pLocal) {
+        this.pLocal = pLocal;
+    }
+    public int getN() {
+        return n;
+    }
+    public void setN(int n) {
+        this.n = n;
+    }
+    public int getNMax() {
+        return nMax;
+    }
+    public void setNMax(int nMax) {
+        this.nMax = nMax;
+    }
+    public int getTamPar() {
+        return tamPar;
+    }
+    public void setTamPar(int tamPar) {
+        this.tamPar = tamPar;
+    }
+    public int getTamBucket() {
+        return tamBucket;
+    }
+    public void setTamBucket(int tamBucket) {
+        this.tamBucket = tamBucket;
+    }
+    public int[] getChaves() {
+        return chaves;
+    }
+    public void setChaves(int[] chaves) {
+        this.chaves = chaves;
+    }
+    public long[] getEnderecos() {
+        return enderecos;
+    }
+    public void setEnderecos(long[] enderecos) {
+        this.enderecos = enderecos;
     }
 
-    public Bucket(int nMax, int pl) throws Exception {
-        if (nMax > 18000) // tamanho maximo do bucket de 1500 unidades de 12 bytes MUDAR DEPOIS
-            throw new Exception("Overflow no número máximo dos pares");
-        if (pl > 51)    // profundidade maxima do bucket de 51 bits MUDAR DEPOIS
-            throw new Exception("Overflow na profundidade local do hash");
-        this.pLocal = (byte) pl;
+    /* Construtores */
+    public Bucket(int nMax) {
+        this(nMax, 1);
+    }
+    public Bucket(int nMax, int pLocal) {
+        this.pLocal = pLocal;
         this.n = 0;
-        this.nMax = (short) nMax;
+        this.nMax = nMax;
+
+        // cria arrays p/armazenar max de chaves (tamanho do bucket)
         this.chaves = new int[nMax];
-        this.dados = new long[nMax];
-        this.sizePar = 12; // int (id = 4) + long (endereço raf = 8)
-        this.sizeBucket = (short) (sizePar * nMax + 3);
+        this.enderecos = new long[nMax];
+        for(int i = 0; i < nMax; i++){
+            this.chaves[i] = -1;
+            this.enderecos[i] = -1;
+        }
+
+        this.tamPar = Integer.BYTES + Long.BYTES; // chave: ID (int) + end.: (long)
+        // tamanho do bucket = pLocal (int) + n (int) + (nMax pares)
+        this.tamBucket = (2 * Integer.BYTES) + (tamPar * nMax);
     }
 
-    public byte[] toByteArray() throws IOException {
+    /* Metodos */
+    @Override
+    public String toString() {
+        String str = "pl = " + pLocal +
+                "\nqtd(chaves) = " + n + "\n| ";
+
+        int i = 0;
+        while(i < n){ // espaco de chaves e enderecos preenchidos 
+            str += chaves[i] + " => " + enderecos[i] + " | ";
+            i++;
+        }
+        while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
+            str += "NULL => NULL | ";
+            i++;
+        }
+        
+        return str;
+    }
+    public byte[] toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        // escrever profundidade local
-        dos.writeByte(pLocal);
-        // escrever numero de pares
-        dos.writeShort(n);
-        int i = 0;
-        // preencher numero de pares preenchidos
-        while (i < n) {
-            dos.writeInt(chaves[i]);
-            dos.writeLong(dados[i]);
-            i++;
+        
+        try{
+            dos.writeInt(pLocal);
+            dos.writeInt(n);
+            
+            for(int i = 0; i < nMax; i++) {
+                dos.writeInt(chaves[i]);
+                dos.writeLong(enderecos[i]);
+            }
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
         }
-        // preencher numero de pares vazios
-        while (i < nMax) {
-            dos.writeInt(-1);
-            dos.writeLong(-1);
-            i++;
-        }
+        
         return baos.toByteArray();
     }
-    
-    public void fromByteArray(byte[] ba) throws IOException {
+    public void fromByteArray(byte[] ba) {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
-        // pegar profundidade local
-        pLocal = dis.readByte();
-        // pegar numero de pares
-        n = dis.readShort();
-        int i = 0;
-        // pregar numero de pares preenchidos
-        while (i < nMax) {
-            chaves[i] = dis.readInt();
-            dados[i] = dis.readLong();
-            i++;
+        
+        try{
+            pLocal = dis.readInt();
+            n = dis.readInt();
+            
+            for(int i = 0; i < nMax; i++) {
+                chaves[i] = dis.readInt();
+                enderecos[i] = dis.readLong();
+            }
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
         }
     }
-    
+
+// TODO: organizar daqui pra baixo
+    public boolean empty() {
+        return n == 0;
+    }
+    public boolean full() {
+        return n == nMax;
+    }
     public boolean create(int c, long d) {
         if (full())
             return false;
@@ -80,17 +150,16 @@ public class Bucket{
         // empurrar pares
         while (i >= 0 && c < chaves[i]) {
             chaves[i + 1] = chaves[i];
-            dados[i + 1] = dados[i];
+            enderecos[i + 1] = enderecos[i];
             i--;
         }
         // colocar par
         i++;
         chaves[i] = c;
-        dados[i] = d;
+        enderecos[i] = d;
         n++;
         return true;
     }
-
     public long read(int c) {
         if (empty())
             return -1;
@@ -99,11 +168,10 @@ public class Bucket{
         while (i < n && c > chaves[i])
             i++;
         if (i < n && c == chaves[i])
-            return dados[i];
+            return enderecos[i];
         else
             return -1;
     }
-
     public boolean update(int c, long d) {
         if (empty())
             return false;
@@ -113,12 +181,11 @@ public class Bucket{
             i++;
         if (i < n && c == chaves[i]) {
             // trocar valor de endereco
-            dados[i] = d;
+            enderecos[i] = d;
             return true;
         } else
             return false;
     }
-
     public boolean delete(int c) {
         if (empty())
             return false;
@@ -130,7 +197,7 @@ public class Bucket{
             // realocar pares
             while (i < n - 1) {
                 chaves[i] = chaves[i + 1];
-                dados[i] = dados[i + 1];
+                enderecos[i] = enderecos[i + 1];
                 i++;
             }
             n--;
@@ -138,49 +205,4 @@ public class Bucket{
         } else
             return false;
     }
-
-    public boolean empty() {
-        return n == 0;
-    }
-
-    public boolean full() {
-        return n == nMax;
-    }
-
-    public String toString() {
-        String s = "Profundidade Local: " + pLocal +
-                "\nNúmero de pares: " + n +
-                "\n| ";
-        int i = 0;
-        while (i < n) {
-            s += chaves[i] + "; " + dados[i] + " | ";
-            i++;
-        }
-        while (i < nMax) {
-            s += "NULL; NULL | ";
-            i++;
-        }
-        return s;
-    }
-
-    public int getSize() {
-        return this.sizeBucket;
-    }
-
-    public byte getLocalDeep() {
-        return this.pLocal;
-    }
-
-    public int getN() {
-        return this.n;
-    }
-
-    public int[] getChaves() {
-        return this.chaves;
-    }
-
-    public long[] getDados() {
-        return this.dados;
-    }
-
 }
