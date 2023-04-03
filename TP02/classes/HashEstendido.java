@@ -1,4 +1,4 @@
-package TP01.classes;
+package TP02.classes;
 
 import java.io.File;
 import java.io.FileNotFoundException;
