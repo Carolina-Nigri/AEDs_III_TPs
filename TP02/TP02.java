@@ -17,11 +17,11 @@ public class TP02 {
     /* Atributos */
     public static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     
-    /* Métodos */
+    /* Metodos */
         /* Main */
     /**
      * Fornece um menu com opcoes para carregar o arquivo da base de dados (CSV),
-     * realizar operações do CRUD e fazer ordenações por intercalação balanceada
+     * realizar operações do CRUD, alterando arquivos de dados e de indices
      */
     public static void main(String[] args) {
         try{
@@ -43,14 +43,14 @@ public class TP02 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
-                        // lê 10000 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 10000; i++){
+                        // lê 80000 musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < 80000; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
                             arquivo.create(musica); 
                         }
-                        System.out.println("Base de dados carregada. 10000 registros criados.");
+                        System.out.println("Base de dados carregada. 80.000 registros criados.");
 
                         break;
                     } case 1: { // Create
@@ -103,7 +103,8 @@ public class TP02 {
                             System.out.println("Erro ao remover musica");
 
                         break;
-                    } case 5: { 
+                    } case 5: { // TODO: trocar por algo? ou tirar case
+                        System.out.println("Opcao a modificar");
 
                         break;
                     } case 6: { // Fecha arquivo e encerra programa
@@ -135,8 +136,8 @@ public class TP02 {
     }
         /* Menus */
     /**
-     * Mostra menu principal e solicita ao usuário qual opção ele deseja executar
-     * @return int opção lida
+     * Mostra menu principal e solicita ao usuario qual opcao ele deseja executar
+     * @return int opcao lida
      */
     public static int menu() {
         System.out.println("\nMenu principal - TP02");
@@ -146,7 +147,7 @@ public class TP02 {
         System.out.println("2 - Read");
         System.out.println("3 - Update");
         System.out.println("4 - Delete");
-        System.out.println("5 - Ordenacao");
+        System.out.println("5 - ???");
         System.out.println("6 - Fechar programa");
         System.out.println("7 - Deletar arquivo");
         
@@ -167,38 +168,9 @@ public class TP02 {
 
         return opc;
     }
-    /**
-     * Mostra submenu na tela e solicita ao usuário qual opção ele deseja executar (Ordenacao)
-     * @return int opção lida
-     */
-    public static int subMenu() {
-        System.out.println("\nMenu secundario - Ordenacao externa");
-        System.out.println("Escolha uma das opcoes:");
-        System.out.println("0 - Voltar ao menu principal");
-        System.out.println("1 - Intercalacao balanceada comum");
-        System.out.println("2 - Intercalacao balanceada com blocos de tamanho variavel");
-        System.out.println("3 - Intercalacao balanceada com selecao por substituicao");
-        
-        int opc = -1;
-        boolean invalido = false;
-     
-        try{
-            do{
-                System.out.print("-> ");
-                opc = Integer.parseInt(br.readLine());
-                invalido = (opc < 0) || (opc > 3);
-                if(invalido) System.out.println("Opcao invalida! Digite novamente");
-            } while(invalido);
-        } catch(IOException ioe){
-            System.err.println("Erro ao ler opcao do submenu");
-            ioe.printStackTrace();
-        }
-
-        return opc;
-    }
         /* Leituras */
     /**
-     * Solicita ao usuário que digite os atributos da musica, criando uma instância
+     * Solicita ao usuario que digite os atributos da musica, criando uma instancia
      * e retornando o objeto criado
      * @return objeto da musica lida
      */
@@ -249,8 +221,8 @@ public class TP02 {
         return msc;
     }
     /**
-     * Lê o atributo que o usuário deseja alterar da música e retorna um objeto novo
-     * com a alteração do atributo feita 
+     * Le o atributo que o usuario deseja alterar da musica e retorna um objeto novo
+     * com a alteracao do atributo feita 
      * @param atual objeto Musica atual
      * @return nova objeto Musica alterado
      */

@@ -17,7 +17,7 @@ public class Musica {
     protected int duration_ms;
     protected Date release_date;
     protected String track_id, // string de tamanho fixo (22) 
-                     name;    // string de tamanho variável
+                     name;    // string de tamanho variavel
     protected ArrayList<String> artists;
 
     /* Getters e Setters */ 
@@ -72,7 +72,7 @@ public class Musica {
         this.artists = artists;
     }
 
-    /* Métodos */
+    /* Metodos */
         /* Sobreescritos */
     /**
      * @return atributos da classe Musica como string
@@ -97,7 +97,7 @@ public class Musica {
         
         return clone;
     }
-        /* Manipulação de bytes */
+        /* Manipulacao de bytes */
     /**
      * Converte objeto da classe para um array de bytes, escrevendo todos os atributos
      * e a quantidade de elementos na lista de artistas
@@ -143,7 +143,8 @@ public class Musica {
             try{
                 this.release_date = sdf.parse(dis.readUTF()); 
             } catch(ParseException pe){
-
+                System.err.println("Erro ao fazer parse da data");
+                pe.printStackTrace();
             }
     
             this.track_id = dis.readUTF();
@@ -154,7 +155,8 @@ public class Musica {
                 artists.add(dis.readUTF());
             }
         } catch(IOException ioe){
-
+            System.err.println("Erro ao ler atributo de bytes");
+            ioe.printStackTrace();
         }
     }
         /* Database */
@@ -181,7 +183,7 @@ public class Musica {
             } else{ // achou fim
                 found = true;
             }
-            index++; // próximo index
+            index++; // proximo index
        
         }
         this.duration_ms = Integer.parseInt(durationString); // transforma em int
@@ -195,7 +197,7 @@ public class Musica {
             } else{ // achou fim
                 found = true;
             }
-            index++; // próximo index
+            index++; // proximo index
        
         }
         // Cria formato de data e transforma string em Date
@@ -216,13 +218,13 @@ public class Musica {
             } else{ // achou fim
                 found = true;
             }
-            index++; // próximo index
+            index++; // proximo index
        
         }
     
         /* Procura atributo name */
         found = false;
-        if(line.charAt(index) == '\"'){ // verifica se nome está entre aspas => contém vírgula
+        if(line.charAt(index) == '\"'){ // verifica se nome está entre aspas => contém virgula
             index++; // pula a " abrindo
 
             while(!found){
@@ -232,12 +234,12 @@ public class Musica {
                 } else{ // achou fim
                     found = true;
                 }
-                index++; // próximo index
+                index++; // proximo index
 
             }
-            index++; // pula a vírgula      
+            index++; // pula a virgula      
         }
-        else{ // parse normal pela vírgula
+        else{ // parse normal pela virgula
             while(!found){
                 
                 if(line.charAt(index) != ','){ // add caracteres na string
@@ -245,21 +247,21 @@ public class Musica {
                 } else{ // achou fim
                     found = true;
                 }
-                index++; // próximo index
+                index++; // proximo index
         
             }
         }
     
         /* Procura atributo artists */
-        while(index < TAM){ // vai até o fim da linha
+        while(index < TAM){ // vai ate o fim da linha
             if( line.charAt(index) != '[' && line.charAt(index) != ']' && 
                 line.charAt(index) != '\'' && line.charAt(index) != '\"' ){
                     
                 artistsString += line.charAt(index); // add caracteres na string
             }
-            index++; // próximo index
+            index++; // proximo index
         }        
-        // Add artistas separados por vírgula ao ArrayList
+        // Add artistas separados por virgula ao ArrayList
         String[] artistsArray = artistsString.split(", ");
         for(int j = 0; j < artistsArray.length; j++){
             this.artists.add(artistsArray[j]);
