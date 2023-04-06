@@ -305,10 +305,11 @@ public class CRUD {
      * atualizando o valor ao final 
      * @param obj Musica a ser registrada no arquivo 
      */
-    public void create(Musica obj) {
+    public void create(Musica obj, int tamBase) {
         int ultimoID = -1;
         byte[] objectData;
         long pos;
+        HashEstendido hash = new HashEstendido(5/100 * tamBase);
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -329,6 +330,9 @@ public class CRUD {
 
             arq.seek(0); // inicio do arquivo
             arq.writeInt(ultimoID);
+
+            // atualiza arquivos de indice
+            hash.create(ultimoID, pos);
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
             ioe.printStackTrace();
@@ -394,7 +398,7 @@ public class CRUD {
      * cria o novo no fim do arquivo, se forem de mesmo tamanho apenas escreve no lugar
      * @param objNovo nova musica a ser registrada
      */
-    public boolean update(Musica objNovo) {
+    public boolean update(Musica objNovo, int tamBase) {
         boolean found = false;
 
         try{
@@ -430,7 +434,7 @@ public class CRUD {
                         } else{ // maior ou menor => delete + create
                             arq.seek(pos); // retorna para posicao da lapide
                             arq.writeByte('*');
-                            create(objNovo);
+                            create(objNovo, tamBase);
                             System.out.println("Novo ID da musica: "+objNovo.getID());
                         }
                     } else{

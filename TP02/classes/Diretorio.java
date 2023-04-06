@@ -13,11 +13,11 @@ public class Diretorio {
     private long[] enderecos; // array de enderecos dos buckets
 
     /* Getters e Setters */
-    public int getPGlobal() {
-        return this.pGlobal;
+    public long getEndereco(int i) {
+        return this.enderecos[i];
     }
-    public void setPGlobal(int pGlobal) {
-        this.pGlobal = pGlobal;
+    public void setEndereco(int i, long enderecoBucket) {
+        this.enderecos[i] = enderecoBucket;
     }
 
     /* Construtores */
@@ -29,7 +29,7 @@ public class Diretorio {
         this.enderecos = new long[ (int)Math.pow(2, pGlobal) ];
         
         for(int i = 0; i < this.enderecos.length; i++){
-            this.enderecos[i] = 0; // TODO: verificar como enderecos devem ser inicializados
+            this.enderecos[i] = -1; 
         }
     }
     
@@ -78,53 +78,21 @@ public class Diretorio {
             System.err.println(ioe.getMessage());
         }
     }
+    public void aumentarP() {
+        // copia enderecos atuais em um array tmp
+        int tam = (int)Math.pow(2, pGlobal);
+        long[] enderecosTmp = new long[tam];
+        for(int i = 0; i < tam; i++){
+            enderecosTmp[i] = enderecos[i];
+        }
 
-// TODO: organizar daqui pra baixo  
-    public int hash(int chave) {
-        return chave % (int) Math.pow(2, pGlobal);
-    }
-    public int hash2(int chave, int pl) { // cálculo do hash para profundidade local
-        return chave % (int) Math.pow(2, pl);
-    }
-    public long enderecoBucket(int pos) {
-        long endereco = -1; 
-
-        if(pos < Math.pow(2, pGlobal) && pos >= 0)
-            endereco = enderecos[pos];
+        pGlobal++; // aumenta pGlobal
         
-        return endereco;
-    }
-    public boolean atualizarEndereco(int p, long e) {
-        boolean sucesso = false;
-
-        // testar se a profundidade existe
-        if(p > Math.pow(2, pGlobal))
-            return false;
-        // atualizar
-        enderecos[p] = e;
-
-        return sucesso;
-    }
-    public boolean aumentarGlobal() {
-        if (pGlobal >= 127)
-            return false;
-        pGlobal++;
-        int n1 = (int) Math.pow(2, pGlobal - 1); // metade
-        int n2 = (int) Math.pow(2, pGlobal); // tamanho total
-        // novo tamanho
-        long[] newEnderecos = new long[n2];
-        int i = 0;
-        // colocar primeira metade dos enderecos
-        while (i < n1) {
-            newEnderecos[i] = enderecos[i];
-            i++;
+        // faz novo array 
+        enderecos = new long[ (int)Math.pow(2, pGlobal) ];
+        for(int i = 0; i < tam; i++){
+            enderecos[i] = enderecosTmp[i];
+            enderecos[i + tam] = enderecosTmp[i];
         }
-        // colocar segunda metade dos enderecos
-        while (i < n2) {
-            newEnderecos[i] = enderecos[i - n1];
-            i++;
-        }
-        enderecos = newEnderecos;
-        return true;
     }
 }

@@ -12,7 +12,6 @@ public class Bucket {
     private int pLocal, // profundidade local
                 n, // numero de chaves atuais
                 nMax, // numero maximo de chaves
-                tamPar, // tamanho fixo do par chave e endereco (bytes)
                 tamBucket; // tamanho fixo do bucket (bytes)
     private int[] chaves; // chaves armazenadas
     private long[] enderecos; // enderecos das chaves
@@ -24,41 +23,24 @@ public class Bucket {
     public void setPLocal(int pLocal) {
         this.pLocal = pLocal;
     }
-    public int getN() {
-        return n;
-    }
-    public void setN(int n) {
-        this.n = n;
-    }
-    public int getNMax() {
-        return nMax;
-    }
-    public void setNMax(int nMax) {
-        this.nMax = nMax;
-    }
-    public int getTamPar() {
-        return tamPar;
-    }
-    public void setTamPar(int tamPar) {
-        this.tamPar = tamPar;
+    public int getN(){
+        return this.n;
     }
     public int getTamBucket() {
         return tamBucket;
     }
-    public void setTamBucket(int tamBucket) {
-        this.tamBucket = tamBucket;
+    public int getChave(int i) {
+        return chaves[i];
     }
-    public int[] getChaves() {
-        return chaves;
+    public void setChave(int i, int chave) {
+        this.chaves[i] = chave;
+        n++;
     }
-    public void setChaves(int[] chaves) {
-        this.chaves = chaves;
+    public long getEndereco(int i) {
+        return enderecos[i];
     }
-    public long[] getEnderecos() {
-        return enderecos;
-    }
-    public void setEnderecos(long[] enderecos) {
-        this.enderecos = enderecos;
+    public void setEndereco(int i, long endereco) {
+        this.enderecos[i] = endereco;
     }
 
     /* Construtores */
@@ -78,9 +60,8 @@ public class Bucket {
             this.enderecos[i] = -1;
         }
 
-        this.tamPar = Integer.BYTES + Long.BYTES; // chave: ID (int) + end.: (long)
-        // tamanho do bucket = pLocal (int) + n (int) + (nMax pares)
-        this.tamBucket = (2 * Integer.BYTES) + (tamPar * nMax);
+        // tamanho bucket = pLocal (int) + n (int) + (nMax pares)
+        this.tamBucket = (2 * Integer.BYTES) + (Integer.BYTES + Long.BYTES * nMax);
     }
 
     /* Metodos */
@@ -94,10 +75,11 @@ public class Bucket {
             str += chaves[i] + " => " + enderecos[i] + " | ";
             i++;
         }
-        while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
-            str += "NULL => NULL | ";
-            i++;
-        }
+        // nao imprimir p/nao ficar mto grande
+        // while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
+        //     str += "NULL => NULL | ";
+        //     i++;
+        // }
         
         return str;
     }
@@ -135,74 +117,32 @@ public class Bucket {
             System.err.println(ioe.getMessage());
         }
     }
-
-// TODO: organizar daqui pra baixo
-    public boolean empty() {
-        return n == 0;
+    public void deletePar(int i) {
+        chaves[i] = -1;
+        enderecos[i] = -1;
+        n--;        
     }
-    public boolean full() {
-        return n == nMax;
-    }
-    public boolean create(int c, long d) {
-        if (full())
-            return false;
-        int i = n - 1;
-        // empurrar pares
-        while (i >= 0 && c < chaves[i]) {
-            chaves[i + 1] = chaves[i];
-            enderecos[i + 1] = enderecos[i];
-            i--;
+    public void reorganizarChaves() {
+        int[] chavesTmp = new int[n];
+        long[] enderecosTmp = new long[n];
+        
+        // copia so chaves e enderecos validos, limpa o resto
+        int i = 0;
+        while(i < nMax){
+            if(chaves[i] != -1){
+                chavesTmp[i] =  chaves[i];
+                enderecosTmp[i] = enderecos[i];
+            } 
+              
+            chaves[i] = -1;
+            enderecos[i] = -1;
+            i++;
         }
-        // colocar par
-        i++;
-        chaves[i] = c;
-        enderecos[i] = d;
-        n++;
-        return true;
-    }
-    public long read(int c) {
-        if (empty())
-            return -1;
-        int i = 0;
-        // pesquisa linear no bucket
-        while (i < n && c > chaves[i])
-            i++;
-        if (i < n && c == chaves[i])
-            return enderecos[i];
-        else
-            return -1;
-    }
-    public boolean update(int c, long d) {
-        if (empty())
-            return false;
-        int i = 0;
-        // pesquisa linear no bucket
-        while (i < n && c > chaves[i])
-            i++;
-        if (i < n && c == chaves[i]) {
-            // trocar valor de endereco
-            enderecos[i] = d;
-            return true;
-        } else
-            return false;
-    }
-    public boolean delete(int c) {
-        if (empty())
-            return false;
-        int i = 0;
-        // pesquisa linear no bucket
-        while (i < n && c > chaves[i])
-            i++;
-        if (c == chaves[i]) {
-            // realocar pares
-            while (i < n - 1) {
-                chaves[i] = chaves[i + 1];
-                enderecos[i] = enderecos[i + 1];
-                i++;
-            }
-            n--;
-            return true;
-        } else
-            return false;
+
+        // copia tmps de volta pros originais
+        for(i = 0; i < n; i++){
+            chaves[i] = chavesTmp[i];
+            enderecos[i] = enderecosTmp[i];
+        }
     }
 }

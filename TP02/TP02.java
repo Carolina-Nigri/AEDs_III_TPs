@@ -1,6 +1,7 @@
 /** Pacotes **/
 package TP02;
 import TP02.classes.CRUD;
+import TP02.classes.HashEstendido;
 import TP02.classes.Musica;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +33,7 @@ public class TP02 {
             // arquivo RAF (registros em bytes) 
             CRUD arquivo = new CRUD("TP02/data/musicas.db");
 
+            int tamBase = 10000; // tamanho da base csv
             int opc = -1; // opcao do menu
 
             do{
@@ -43,21 +45,21 @@ public class TP02 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
-                        // lê 80000 musicas (linhas) do CSV, faz parse e cria registros
-                        for(int i = 0; i < 80000; i++){
+                        // lê (tamBase) musicas (linhas) do CSV, faz parse e cria registros
+                        for(int i = 0; i < tamBase; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
-                            arquivo.create(musica); 
+                            arquivo.create(musica, tamBase); 
                         }
-                        System.out.println("Base de dados carregada. 80.000 registros criados.");
+                        System.out.println("Base de dados carregada. "+tamBase+" registros criados.");
 
                         break;
                     } case 1: { // Create
                         System.out.println("\n**Criando musica**");
                         
                         Musica msc = lerMusica();
-                        arquivo.create(msc);
+                        arquivo.create(msc, tamBase);
                         
                         System.out.println("\n" + msc);
                                                 
@@ -82,7 +84,7 @@ public class TP02 {
                             System.out.println("\n" + msc);
                             Musica nova = lerAtualizacao(msc);
                                                     
-                            if(arquivo.update(nova))
+                            if(arquivo.update(nova, tamBase))
                                 System.out.println("Musica atualizada com sucesso");
                             else
                                 System.out.println("Erro ao atualizar musica");
@@ -105,6 +107,8 @@ public class TP02 {
                         break;
                     } case 5: { // TODO: trocar por algo? ou tirar case
                         System.out.println("Opcao a modificar");
+                        HashEstendido hash = new HashEstendido(2500);
+                        hash.printHash();
 
                         break;
                     } case 6: { // Fecha arquivo e encerra programa
