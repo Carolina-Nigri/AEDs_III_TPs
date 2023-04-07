@@ -397,8 +397,6 @@ public class HashEstendido {
 
                 i++;
             }
-
-            System.out.println(endereco);
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
@@ -407,12 +405,67 @@ public class HashEstendido {
 
         return endereco;
     }
-
+    
     // public boolean update() {
         
     // }
+    /**
+     * Pesquisa chave no hashing, calculando a funcao hash e lendo o bucket onde deveria
+     * estar. Depois procura chave dentro do bucket encontrado, deletando par chave e 
+     * endereco, reorganizando chaves e reescrevendo em arquivo
+     * @param chave int (ID) a ser deletado
+     * @return true se conseguir deletar chave, false caso contrario
+     */
+    public boolean delete(int chave) {
+        boolean found = false;
 
-    // public boolean delete() {
-        
-    // } 
+        try{
+            // abre arquivos
+            rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
+            rafBucket = new RandomAccessFile(pathBucket, "rw");
+            
+            // le pGlobal do diretorio e salva pos
+            rafDiretorio.seek(0);
+            int pG = rafDiretorio.readInt();
+            long posDir = rafDiretorio.getFilePointer();
+            
+            // calcula funcao hash da chave e le endereco do bucket onde deve pesquisar
+            int bucket = hash(chave, pG);
+            posDir = posDir + (bucket * Long.BYTES);
+            rafDiretorio.seek(posDir);
+            long posBucket = rafDiretorio.readLong();
+            
+            // vai p/posicao do bucket p/buscar chave e le bucket
+            rafBucket.seek(posBucket);
+            Bucket bEncontrado = new Bucket(qtdChaves);
+            byte[] byteArray = new byte[bEncontrado.getTamBucket()];
+            rafBucket.read(byteArray);
+            bEncontrado.fromByteArray(byteArray);
+
+            // pesquisa chave no bucket
+            int n = bEncontrado.getN();
+            int i = 0;
+            while( i < n && !found ){
+                if(chave == bEncontrado.getChave(i)){ // achou
+                    bEncontrado.deletePar(i); // deleta chave do bucket
+                    found = true;
+                }
+
+                i++;
+            }
+
+            bEncontrado.reorganizarChaves();
+
+            // escreve bucket de volta no arquivo
+            rafBucket.seek(posBucket);
+            byteArray = bEncontrado.toByteArray();
+            rafBucket.write(byteArray);
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+
+        return found;
+    } 
 }

@@ -367,7 +367,7 @@ public class CRUD {
      * valida, se sim le do arquivo de dados, se nao retorna um objeto vazio 
      * @param ID da musica a ser lida
      * @param tamBase int tamanho inicial da base de dados 
-     * @param indice int valor do indice escolhido 
+     * @param indice int valor do indice escolhido pra pesquisa 
      * @return objeto Musica lido do arquivo
      */
     public Musica read(int ID, int tamBase, int indice) {
@@ -402,8 +402,6 @@ public class CRUD {
                     obj = new Musica();
                     obj.fromByteArray(data);
                 }
-            } else{ 
-                System.err.println("Registro pesquisado nao encontrado");
             }
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
@@ -486,12 +484,16 @@ public class CRUD {
         return found;
     }
     /**
-     * Deleta um registro do arquivo, procurando a musica que se deseja deletar pelo
-     * ID e marcando sua lapide como verdadeira (*) quando encontrar
+     * Busca posicao do registro utilizando o indice solicitado, verifica se eh uma posicao
+     * valida, se sim deleta (logicamente) do arquivo de dados e retira chave dos indices, 
+     * retornando se teve sucesso ou nao
      * @param ID da musica a ser deletada
+     * @param tamBase int tamanho inicial da base de dados 
+     * @param indice int valor do indice escolhido pra pesquisa
+     * @return true se conseguir deletar dos indices, false caso contrario
      */
     public boolean delete(int ID, int tamBase, int indice) {
-        boolean found = false;
+        boolean sucesso = false;
         
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
@@ -501,45 +503,31 @@ public class CRUD {
             
             // busca posicao do registro procurado nos indices
             switch(indice){
-                case 1: System.out.println("Pesquisa na Arvore B"); break;
+                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
                 case 2: pos = hash.read(ID); break; 
             }
 
-            long arqLen = arq.length();
             byte lapide;
-            int regSize, regID;
 
-            // posiciona ponteiro no inicio, pula cabecalho e salva posicao
-            arq.seek(0); 
-            arq.skipBytes(Integer.BYTES);
-            pos = arq.getFilePointer(); 
+            if(pos != -1){ // encontrou posicao valida no indice
+                arq.seek(pos);
 
-            while(!found && pos != arqLen){
-                // le primeiros dados
+                // le lapide
                 lapide = arq.readByte();
-                regSize = arq.readInt();
 
                 if(lapide == ' '){ // lapide falsa => registro nao excluido
-                    regID = arq.readInt();
+                    arq.seek(pos); // retorna para posicao da lapide
+                    arq.writeByte('*');
 
-                    if(regID == ID){ // verifica se registro eh o procurado 
-                        arq.seek(pos); // retorna para posicao da lapide
-                        arq.writeByte('*');
-                        found = true;
-                    } else{ // pula bytes de parte do registro (ID já foi pulado)
-                        arq.skipBytes(regSize - Integer.BYTES);
-                    }
-                } else{ // pula bytes do registro inteiro
-                    arq.skipBytes(regSize); 
+                    // deleta registro dos indices
+                    sucesso = hash.delete(ID);
                 }
-                
-                pos = arq.getFilePointer(); // inicio do proximo registro (lapide)
             }
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao deletar registro no arquivo");
             ioe.printStackTrace();
         }
 
-        return found;
+        return sucesso;
     }
 }

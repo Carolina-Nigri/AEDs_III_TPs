@@ -65,6 +65,10 @@ public class Bucket {
     }
 
     /* Metodos */
+        /* Basicos */
+    /**
+     * @return atributos da classe como string
+     */
     @Override
     public String toString() {
         String str = "pl = " + pLocal +
@@ -75,13 +79,20 @@ public class Bucket {
             str += "| " + chaves[i] + " => " + enderecos[i] + " ";
             i++;
         }
+        /* 
+        // imprimir se necessario, evitar p/nao ficar mta coisa na tela
         while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
             str += "| " + chaves[i] + " => " + enderecos[i] + " ";
             i++;
         }
-        
+         */
+
         return str;
     }
+    /**
+     * Converte objeto da classe para um array de bytes, escrevendo seus atributos
+     * @return Byte array do objeto
+     */
     public byte[] toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -100,8 +111,13 @@ public class Bucket {
         
         return baos.toByteArray();
     }
-    public void fromByteArray(byte[] ba) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+    /**
+     * Converte um array de bytes para os atributos da classe, atribuindo
+     * ao objeto corrente
+     * @param byteArray array de bytes de um objeto
+     */
+    public void fromByteArray(byte[] byteArray) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
         DataInputStream dis = new DataInputStream(bais);
         
         try{
@@ -116,12 +132,20 @@ public class Bucket {
             System.err.println(ioe.getMessage());
         }
     }
-    
+        /* Manipulacao do Hashing */
+    /**
+     * Deleta par da posicao passada do bucket, colocando valores de chave e endereco 
+     * como -1 e diminuindo valor de n
+     * @param i int posicao do par
+     */
     public void deletePar(int i) {
         chaves[i] = -1;
         enderecos[i] = -1;
         n--;        
     }
+    /**
+     * Reorganiza chaves e enderecos, copiando chaves validas (!= -1) pro inicio
+     */
     public void reorganizarChaves() {
         int[] chavesTmp = new int[n];
         long[] enderecosTmp = new long[n];

@@ -82,6 +82,8 @@ public class TP02 {
                         Musica msc = arquivo.read(readID, tamBase, indice);
                         if(msc != null)
                             System.out.println("\n" + msc);
+                        else
+                            System.out.println("Musica buscada nao encontrada");
                         
                         break;
                     } case 3: { // Update

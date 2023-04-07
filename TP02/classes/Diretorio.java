@@ -36,7 +36,11 @@ public class Diretorio {
         }
     }
     
-    /* Metodos */  
+    /* Metodos */
+        /* Basicos */
+    /**
+     * @return atributos da classe como string
+     */  
     @Override
     public String toString() {
         String str = "pg = " + pGlobal;
@@ -48,6 +52,10 @@ public class Diretorio {
 
         return str;
     }
+    /**
+     * Converte objeto da classe para um array de bytes, escrevendo seus atributos
+     * @return Byte array do objeto
+     */
     public byte[] toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -64,6 +72,11 @@ public class Diretorio {
         
         return baos.toByteArray();
     }
+    /**
+     * Converte um array de bytes para os atributos da classe, atribuindo
+     * ao objeto corrente
+     * @param byteArray array de bytes de um objeto
+     */
     public void fromByteArray(byte[] ba) {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
@@ -81,7 +94,11 @@ public class Diretorio {
             System.err.println(ioe.getMessage());
         }
     }
-    
+        /* Manipulacao do Hashing */
+    /**
+     * Aumenta profundidade global do diretorio em 1, dobrando tamanho do diretorio
+     * e copiando ponteiros da primeira metade pra segunda metade
+     */
     public void aumentarP() {
         // copia enderecos atuais em um array tmp
         int tam = (int)Math.pow(2, pGlobal);
