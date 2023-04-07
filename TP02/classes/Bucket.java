@@ -61,25 +61,24 @@ public class Bucket {
         }
 
         // tamanho bucket = pLocal (int) + n (int) + (nMax pares)
-        this.tamBucket = (2 * Integer.BYTES) + (Integer.BYTES + Long.BYTES * nMax);
+        this.tamBucket = (2 * Integer.BYTES) + (nMax * (Integer.BYTES + Long.BYTES));
     }
 
     /* Metodos */
     @Override
     public String toString() {
         String str = "pl = " + pLocal +
-                "\nqtd(chaves) = " + n + "\n| ";
+                     "\nn = " + n + "\n";
 
         int i = 0;
         while(i < n){ // espaco de chaves e enderecos preenchidos 
-            str += chaves[i] + " => " + enderecos[i] + " | ";
+            str += "| " + chaves[i] + " => " + enderecos[i] + " ";
             i++;
         }
-        // nao imprimir p/nao ficar mto grande
-        // while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
-        //     str += "NULL => NULL | ";
-        //     i++;
-        // }
+        while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
+            str += "| " + chaves[i] + " => " + enderecos[i] + " ";
+            i++;
+        }
         
         return str;
     }
@@ -117,6 +116,7 @@ public class Bucket {
             System.err.println(ioe.getMessage());
         }
     }
+    
     public void deletePar(int i) {
         chaves[i] = -1;
         enderecos[i] = -1;
@@ -127,22 +127,24 @@ public class Bucket {
         long[] enderecosTmp = new long[n];
         
         // copia so chaves e enderecos validos, limpa o resto
-        int i = 0;
+        int i = 0, j = 0;
         while(i < nMax){
             if(chaves[i] != -1){
-                chavesTmp[i] =  chaves[i];
-                enderecosTmp[i] = enderecos[i];
+                chavesTmp[j] =  chaves[i];
+                enderecosTmp[j] = enderecos[i];
+                j++;
+                
+                chaves[i] = -1;
+                enderecos[i] = -1;
             } 
               
-            chaves[i] = -1;
-            enderecos[i] = -1;
             i++;
         }
 
         // copia tmps de volta pros originais
-        for(i = 0; i < n; i++){
-            chaves[i] = chavesTmp[i];
-            enderecos[i] = enderecosTmp[i];
+        for(int k = 0; k < n; k++){
+            chaves[k] = chavesTmp[k];
+            enderecos[k] = enderecosTmp[k];
         }
     }
 }

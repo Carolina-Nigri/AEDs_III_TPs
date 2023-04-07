@@ -78,6 +78,7 @@ public class Diretorio {
             System.err.println(ioe.getMessage());
         }
     }
+    
     public void aumentarP() {
         // copia enderecos atuais em um array tmp
         int tam = (int)Math.pow(2, pGlobal);

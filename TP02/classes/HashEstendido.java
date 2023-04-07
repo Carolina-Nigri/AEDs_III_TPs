@@ -22,7 +22,7 @@ public class HashEstendido {
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
             rafBucket = new RandomAccessFile(pathBucket, "rw");
 
-            // criar se nao existir
+            // criar arquivos se nao existirem
             if(rafDiretorio.length() == 0 && rafBucket.length() == 0){
                 // cria um novo diretorio, com profundidade de 1 
                 Diretorio diretorio = new Diretorio();
@@ -31,7 +31,7 @@ public class HashEstendido {
                 rafBucket.seek(0);
                 for(int i = 0; i < 2; i++){
                     diretorio.setEndereco(i,rafBucket.getFilePointer());
-                    
+
                     Bucket bucket = new Bucket(qtdChaves);
                     byte[] byteArray = bucket.toByteArray();
                     rafBucket.write(byteArray);
@@ -50,8 +50,38 @@ public class HashEstendido {
     }
     
     /* Metodos */
+    public void printHash() {
+        try{
+            // le arquivo do diretorio de bytes pra classe 
+            byte[] byteArray = new byte[ (int)rafDiretorio.length() ];
+            rafDiretorio.seek(0);
+            rafDiretorio.read(byteArray);
+            Diretorio diretorio = new Diretorio();
+            diretorio.fromByteArray(byteArray);
+
+            // imprime diretorio
+            System.out.println("\nDiretorio:");
+            System.out.println(diretorio);
+            
+            // imprime buckets            
+            System.out.println("\nBuckets:\n");
+
+            // le arquivo de buckets e imprime cada bucket
+            rafBucket.seek(0);
+            while(rafBucket.getFilePointer() != rafBucket.length()){
+                Bucket bucket = new Bucket(qtdChaves);
+                byteArray = new byte[bucket.getTamBucket()];
+                
+                rafBucket.read(byteArray);
+                bucket.fromByteArray(byteArray);
+                System.out.println(bucket);
+            }
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+    }
     public int hash(int chave, int p) {
-        return chave % (int) Math.pow(2, p);
+        return chave % ((int) Math.pow(2, p));
     }
     public void aumentarPGlobal() {
         try{
@@ -105,10 +135,11 @@ public class HashEstendido {
             
             // muda ponteiro no diretorio do bucket novo
             long posBNovo = rafBucket.length();
-            int bucketNovo = bucket + (int)Math.pow(2, pL);
-            rafDiretorio.seek(Integer.BYTES + bucketNovo * Long.BYTES);
+            int bucketNovo = bucket + ((int)Math.pow(2, pL));
+            long posDir = Integer.BYTES + (bucketNovo * Long.BYTES);
+            rafDiretorio.seek(posDir);
             rafDiretorio.writeLong(posBNovo);
-            
+    
             // aumenta pLocal e cria novo bucket
             pL++; 
             bAtual.setPLocal(pL);
@@ -126,7 +157,6 @@ public class HashEstendido {
                     bNovo.setEndereco(j, bAtual.getEndereco(i));
 
                     bAtual.deletePar(i);
-
                     j++;
                 }
             }
@@ -146,50 +176,20 @@ public class HashEstendido {
             System.err.println(ioe.getMessage());
         }        
     }
-    public void printHash() {
-        try{
-            // le arquivo do diretorio de bytes pra classe 
-            byte[] byteArray = new byte[ (int)rafDiretorio.length() ];
-            rafDiretorio.seek(0);
-            rafDiretorio.read(byteArray);
-            Diretorio diretorio = new Diretorio();
-            diretorio.fromByteArray(byteArray);
-
-            // imprime diretorio
-            System.out.println("\nDiretorio:");
-            System.out.println(diretorio);
-            
-            // imprime buckets            
-            System.out.println("\nBuckets (parte preenchida):\n");
-
-            // le arquivo de buckets e imprime cada bucket
-            rafBucket.seek(0);
-            while(rafBucket.getFilePointer() != rafBucket.length()){
-                Bucket bucket = new Bucket(qtdChaves);
-                byteArray = new byte[bucket.getTamBucket()];
-                
-                rafBucket.read(byteArray);
-                bucket.fromByteArray(byteArray);
-                System.out.println(bucket);
-            }
-        } catch(IOException ioe){
-            System.err.println(ioe.getMessage());
-        }
-    }
     public void create(int chave, long endereco) {
         try{
             // abre arquivos
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
             rafBucket = new RandomAccessFile(pathBucket, "rw");
-
+            
             // le pGlobal do diretorio e salva pos
             rafDiretorio.seek(0);
             int pG = rafDiretorio.readInt();
             long posDir = rafDiretorio.getFilePointer();
-
+            
             // calcula funcao hash da chave e le endereco do bucket onde deve inserir
             int bucket = hash(chave, pG);
-            posDir = posDir + bucket * Long.BYTES;
+            posDir = posDir + (bucket * Long.BYTES);
             rafDiretorio.seek(posDir);
             long posBucket = rafDiretorio.readLong();
             
@@ -202,11 +202,12 @@ public class HashEstendido {
             if(n < qtdChaves){ // tem espaco no bucket => escreve dados normalmente
                 // atualiza n
                 n++;
-                rafBucket.seek(posBucket + Integer.BYTES);
+                rafBucket.seek(posBucket);
+                rafBucket.skipBytes(Integer.BYTES); // pula pLocal
                 rafBucket.writeInt(n);
 
                 // procura posicao de insercao
-                posBucket = rafBucket.getFilePointer() + (n-1 * tamPar);
+                posBucket = rafBucket.getFilePointer() + ((n-1) * tamPar);
                 rafBucket.seek(posBucket);
                 rafBucket.writeInt(chave);
                 rafBucket.writeLong(endereco);
@@ -225,22 +226,24 @@ public class HashEstendido {
                     
                     // recalcula hash e le endereco do novo bucket onde deve inserir
                     bucket = hash(chave, pG); 
-                    posDir = Integer.BYTES + bucket * Long.BYTES;
+                    posDir = Integer.BYTES + (bucket * Long.BYTES);
                     rafDiretorio.seek(posDir);
                 }
 
                 // atualiza endereco do bucket e procura posicao de insercao
                 posBucket = rafDiretorio.readLong();
-                rafBucket.seek(posBucket + Integer.BYTES);
+                rafBucket.seek(posBucket);
+                rafBucket.skipBytes(Integer.BYTES); // pula pLocal
                 n = rafBucket.readInt();
 
                 // atualiza n
                 n++;
-                rafBucket.seek(posBucket + Integer.BYTES);
+                rafBucket.seek(posBucket);
+                rafBucket.skipBytes(Integer.BYTES); // pula pLocal
                 rafBucket.writeInt(n);
 
                 // procura posicao de insercao
-                posBucket = rafBucket.getFilePointer() + (n-1 * tamPar);
+                posBucket = rafBucket.getFilePointer() + ((n-1) * tamPar);
                 rafBucket.seek(posBucket);
                 rafBucket.writeInt(chave);
                 rafBucket.writeLong(endereco);

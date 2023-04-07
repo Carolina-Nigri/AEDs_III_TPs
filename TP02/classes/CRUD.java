@@ -309,7 +309,7 @@ public class CRUD {
         int ultimoID = -1;
         byte[] objectData;
         long pos;
-        HashEstendido hash = new HashEstendido(5/100 * tamBase);
+        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
 
         try{
             arq.seek(0); // inicio do arquivo
