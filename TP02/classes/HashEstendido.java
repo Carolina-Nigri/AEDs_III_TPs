@@ -405,10 +405,6 @@ public class HashEstendido {
 
         return endereco;
     }
-    
-    // public boolean update() {
-        
-    // }
     /**
      * Pesquisa chave no hashing, calculando a funcao hash e lendo o bucket onde deveria
      * estar. Depois procura chave dentro do bucket encontrado, deletando par chave e 

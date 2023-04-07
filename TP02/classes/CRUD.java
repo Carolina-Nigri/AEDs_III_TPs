@@ -411,13 +411,17 @@ public class CRUD {
         return obj;
     }
     /**
-     * Atualiza um registro de musica, procurando registro antigo e comparando seus 
-     * tamanhos. Se o novo registro for menor ou maior que o antigo, deleta o antigo e
-     * cria o novo no fim do arquivo, se forem de mesmo tamanho apenas escreve no lugar
+     * Busca posicao do registro utilizando o indice solicitado e verifica se eh uma posicao
+     * valida. Se sim, verifica se o registrou nao mudou de tamanho (atualiza apenas no 
+     * arquivo de dados) ou se mudou (deleta registro logicamente do arquivo de dados, cria
+     * novo no fim do arquivo e atualiza indices)
      * @param objNovo nova musica a ser registrada
+     * @param tamBase int tamanho inicial da base de dados 
+     * @param indice int valor do indice escolhido pra pesquisa 
+     * @return true se conseguiu atualizar indices, false caso contrario
      */
     public boolean update(Musica objNovo, int tamBase, int indice) {
-        boolean found = false;
+        boolean sucesso = false;
 
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
@@ -427,61 +431,48 @@ public class CRUD {
             
             // busca posicao do registro procurado nos indices
             switch(indice){
-                case 1: System.out.println("Pesquisa na Arvore B"); break;
+                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
                 case 2: pos = hash.read(objNovo.getID()); break; 
             }
-
-            long arqLen = arq.length();
+            
             byte lapide;
+            int regSize, regSizeNovo;
             byte[] objectData;
-            int regSize, regSizeNovo, regID;
 
-            // posiciona ponteiro no inicio, pula cabecalho e salva posicao
-            arq.seek(0); 
-            arq.skipBytes(Integer.BYTES);
-            pos = arq.getFilePointer(); 
+            if(pos != -1){ // encontrou posicao valida no indice
+                arq.seek(pos);
 
-            while(!found && pos != arqLen){
                 // le primeiros dados
                 lapide = arq.readByte();
                 regSize = arq.readInt();
-                regID = arq.readInt();
 
-                if(regID == objNovo.getID()){ // verifica se registro eh o procurado
-                    if(lapide == ' '){ // lapide falsa => registro nao excluido
-                        found = true;
-                   
-                        // retorna para posicao do ID
-                        arq.seek(pos + 1 + Integer.BYTES); 
+                if(lapide == ' '){ // lapide falsa => registro nao excluido
+                    // cria registro como array de bytes do objeto novo
+                    objectData = objNovo.toByteArray();
+                    regSizeNovo = objectData.length;
+                    
+                    if(regSizeNovo == regSize){ // mesmo tamanho => OK
+                        arq.write(objectData);
 
-                        // cria registro como array de bytes do objeto novo
-                        objectData = objNovo.toByteArray();
-                        regSizeNovo = objectData.length;
+                        sucesso = true;
+                    } else{ // maior ou menor => delete + create
+                        arq.seek(pos); // retorna para posicao da lapide
+                        arq.writeByte('*');
 
-                        if(regSizeNovo == regSize){ // mesmo tamanho => OK
-                            arq.write(objectData);
-                        } else{ // maior ou menor => delete + create
-                            arq.seek(pos); // retorna para posicao da lapide
-                            arq.writeByte('*');
-                            create(objNovo, tamBase);
-                            System.out.println("Novo ID da musica: "+objNovo.getID());
-                        }
-                    } else{
-                        System.err.println("Registro pesquisado ja foi excluido");
-                        pos = arqLen;
+                        // deleta registro antigo dos indices e cria novo 
+                        if( hash.delete(objNovo.getID()) && create(objNovo, tamBase) ) 
+                            sucesso = true;
+                        
+                        System.out.println("Novo ID da musica: "+objNovo.getID());
                     }
-                } else{ // pula bytes de parte do registro (ID já foi pulado)
-                    arq.skipBytes(regSize - Integer.BYTES);
                 }
-                
-                pos = arq.getFilePointer(); // inicio do proximo registro (lapide)
             }
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao atualizar registro no arquivo");
             ioe.printStackTrace();
         }
 
-        return found;
+        return sucesso;
     }
     /**
      * Busca posicao do registro utilizando o indice solicitado, verifica se eh uma posicao
