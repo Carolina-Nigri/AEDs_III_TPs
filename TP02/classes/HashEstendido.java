@@ -3,6 +3,7 @@ package TP02.classes;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.File;
 
 /** Classe HashEstendido **/
 public class HashEstendido {
@@ -23,7 +24,7 @@ public class HashEstendido {
             rafBucket = new RandomAccessFile(pathBucket, "rw");
 
             // criar arquivos se nao existirem
-            if(rafDiretorio.length() == 0 && rafBucket.length() == 0){
+            if(!exists()){
                 // cria um novo diretorio, com profundidade de 1 
                 Diretorio diretorio = new Diretorio();
                 
@@ -50,6 +51,54 @@ public class HashEstendido {
     }
     
     /* Metodos */
+        /* Manipulacao dos arquivos */
+    /**
+     * Verifica se arquivos ja existem 
+     * @return true se sim, false se nao
+     */
+    public boolean exists() {
+        boolean existem = false;
+
+        try{
+            if(rafDiretorio.length() != 0 && rafBucket.length() != 0)
+                existem = true;
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+
+        return existem;
+    }
+    /**
+     * Fecha arquivos RandomAcessFile
+     */
+    public void close() {
+        try{
+            rafDiretorio.close();
+            rafBucket.close();
+        } catch(IOException ioe){
+            System.err.println("Erro ao fechar arquivos");
+            ioe.printStackTrace();
+        }
+    }
+    /**
+     * Deleta arquivos RandomAcessFile 
+     * @return true se conseguir deletar, false caso contrario
+     */
+    public boolean deleteFiles() {
+        boolean sucesso = false;
+        
+        File dir = new File(pathDiretorio);
+        File bucket = new File(pathBucket);
+        
+        if(dir.delete() && bucket.delete())
+            sucesso = true;
+
+        return sucesso;
+    }
+        /* Funcoes auxiliares */
+    /**
+     * Imprime o diretorio e os buckets do hashing lidos dos arquivos
+     */
     public void printHash() {
         try{
             // le arquivo do diretorio de bytes pra classe 
@@ -64,25 +113,38 @@ public class HashEstendido {
             System.out.println(diretorio);
             
             // imprime buckets            
-            System.out.println("\nBuckets:\n");
+            System.out.println("\nBuckets:");
 
             // le arquivo de buckets e imprime cada bucket
             rafBucket.seek(0);
-            while(rafBucket.getFilePointer() != rafBucket.length()){
+            long pos = rafBucket.getFilePointer();
+            while(pos != rafBucket.length()){
                 Bucket bucket = new Bucket(qtdChaves);
                 byteArray = new byte[bucket.getTamBucket()];
                 
                 rafBucket.read(byteArray);
                 bucket.fromByteArray(byteArray);
-                System.out.println(bucket);
+                System.out.println("\nEndereco " + pos + ": " + bucket);
+
+                pos = rafBucket.getFilePointer();
             }
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
     }
+    /**
+     * Faz o calculo da funcao hash
+     * @param chave elemento a ser inserido no hash
+     * @param p profundidade com que se ira calcular a funcao
+     * @return int posicao do hash (bucket a ser inserido)
+     */
     public int hash(int chave, int p) {
         return chave % ((int) Math.pow(2, p));
     }
+    /**
+     * Aumenta em 1 a profundidade global do diretorio, criando novas posicoes e atualizando
+     * os ponteiros, armazenando mudancas no arquivo 
+     */
     public void aumentarPGlobal() {
         try{
             // abre arquivos
@@ -109,7 +171,13 @@ public class HashEstendido {
             System.err.println(ioe.getMessage());
         }        
     }
-    public void aumentarPLocal(int bucket) {
+    /**
+     * Aumenta em 1 a profundidade local do bucket passado, criando novo bucket e alterando
+     * ponteiro do diretorio. Por fim, reorganiza as chaves e armazena de volta no arquivo
+     * @param pL int profundidade local atual
+     * @param bucket int qual o bucket que se quer aumentar a profundidade
+     */
+    public void aumentarPLocal(int bucket, int pL) {
         try{
             // abre arquivos
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
@@ -121,6 +189,18 @@ public class HashEstendido {
             rafDiretorio.read(byteArray);
             Diretorio diretorio = new Diretorio();
             diretorio.fromByteArray(byteArray);
+            
+            // verifica tamanho atual do diretorio
+            int pG = diretorio.getPGlobal();
+            int tamDir = (int)Math.pow(2, pG);
+
+            // descobre qual bucket deve ser criado
+            int bucketNovo = bucket + ((int)Math.pow(2, pL));
+            if(bucketNovo >= tamDir){ // bucket passado por parametro ainda nao foi criado
+                int tmp = bucket;
+                bucket = bucket - ((int)Math.pow(2, pL)); // "bucket atual"
+                bucketNovo = tmp;
+            }
 
             // pega endereco do bucket atual do diretorio
             long posBAtual = diretorio.getEndereco(bucket);
@@ -131,11 +211,9 @@ public class HashEstendido {
             byteArray = new byte[bAtual.getTamBucket()];
             rafBucket.read(byteArray);
             bAtual.fromByteArray(byteArray);
-            int pL = bAtual.getPLocal(); // pega pLocal atual
             
             // muda ponteiro no diretorio do bucket novo
             long posBNovo = rafBucket.length();
-            int bucketNovo = bucket + ((int)Math.pow(2, pL));
             long posDir = Integer.BYTES + (bucketNovo * Long.BYTES);
             rafDiretorio.seek(posDir);
             rafDiretorio.writeLong(posBNovo);
@@ -176,7 +254,17 @@ public class HashEstendido {
             System.err.println(ioe.getMessage());
         }        
     }
-    public void create(int chave, long endereco) {
+        /* CRUD do indice */
+    /**
+     * Insere um par chave e endereco no hash, calculando sua posicao pela funcao hash
+     * e aumentando as profundidades global ou local quando necessario
+     * @param chave int (ID) a ser inserido
+     * @param endereco long posicao no arquivo de dados da chave
+     * @return true se conseguir inserir, false se nao
+     */
+    public boolean create(int chave, long endereco) {
+        boolean sucesso = false;
+
         try{
             // abre arquivos
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
@@ -213,7 +301,7 @@ public class HashEstendido {
                 rafBucket.writeLong(endereco);
             } else{ // NAO tem espaco no bucket
                 if(pL < pG){ // pGlobal ja aumentou => aumentarPLocal
-                    aumentarPLocal(bucket);
+                    aumentarPLocal(bucket, pL);
                     pL++;
 
                     // posiciona no endereco do bucket a inserir
@@ -221,7 +309,7 @@ public class HashEstendido {
                 } else{ // aumentar pGlobal
                     aumentarPGlobal();
                     pG++;
-                    aumentarPLocal(bucket);
+                    aumentarPLocal(bucket, pL);
                     pL++;
                     
                     // recalcula hash e le endereco do novo bucket onde deve inserir
@@ -248,10 +336,83 @@ public class HashEstendido {
                 rafBucket.writeInt(chave);
                 rafBucket.writeLong(endereco);
             }
+
+            // verifica se dados foram escritos corretamente
+            rafBucket.seek(posBucket);
+            int chaveArq = rafBucket.readInt();
+            long enderecoArq = rafBucket.readLong();
+            
+            if(chaveArq == chave && enderecoArq == endereco)
+                sucesso = true;
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
+
+        return sucesso;
     }
+    /**
+     * Pesquisa chave no hashing, calculando a funcao hash e buscando no bucket onde deveria
+     * estar, retornando endereco da chave no arquivo de dados
+     * @param chave int (ID) a ser pesquisado
+     * @return long endereco no arquivo de dados da chave 
+     */
+    public long read(int chave) {
+        long endereco = -1;
+
+        try{
+            // abre arquivos
+            rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
+            rafBucket = new RandomAccessFile(pathBucket, "rw");
+            
+            // le pGlobal do diretorio e salva pos
+            rafDiretorio.seek(0);
+            int pG = rafDiretorio.readInt();
+            long posDir = rafDiretorio.getFilePointer();
+            
+            // calcula funcao hash da chave e le endereco do bucket onde deve pesquisar
+            int bucket = hash(chave, pG);
+            posDir = posDir + (bucket * Long.BYTES);
+            rafDiretorio.seek(posDir);
+            long posBucket = rafDiretorio.readLong();
+            
+            // vai p/posicao do bucket p/buscar chave e le qtd de chaves
+            rafBucket.seek(posBucket);
+            rafBucket.skipBytes(Integer.BYTES); // pula pLocal
+            int n = rafBucket.readInt();
+            
+            // pesquisa chave no bucket
+            int i = 0;
+            boolean found = false;
+            while( i < n && !found ){
+                int chaveArq = rafBucket.readInt();
+                
+                if(chave == chaveArq){ // achou
+                    endereco = rafBucket.readLong();
+                    found = true;
+                } else{ // nao achou: pula endereco
+                    rafBucket.skipBytes(Long.BYTES);
+                }
+
+                i++;
+            }
+
+            System.out.println(endereco);
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+
+        return endereco;
+    }
+
+    // public boolean update() {
+        
+    // }
+
+    // public boolean delete() {
+        
+    // } 
 }

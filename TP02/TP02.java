@@ -45,46 +45,58 @@ public class TP02 {
                         System.out.println("\n**Fazendo carga inicial**");
 
                         String line; // linha do CSV
+                        boolean sucesso = true;
                         // lê (tamBase) musicas (linhas) do CSV, faz parse e cria registros
                         for(int i = 0; i < tamBase; i++){
                             line = fr.readLine();
                             Musica musica = new Musica();
                             musica.parseCSV(line);
-                            arquivo.create(musica, tamBase); 
+                            
+                            if(!arquivo.create(musica, tamBase))
+                                sucesso = false; 
                         }
                         System.out.println("Base de dados carregada. "+tamBase+" registros criados.");
+
+                        if(sucesso)
+                            System.out.println("Arquivos de indice carregados com sucesso.");
 
                         break;
                     } case 1: { // Create
                         System.out.println("\n**Criando musica**");
                         
                         Musica msc = lerMusica();
-                        arquivo.create(msc, tamBase);
+    
+                        if(arquivo.create(msc, tamBase))
+                            System.out.println("Arquivos de indice atualizados com sucesso.");
                         
                         System.out.println("\n" + msc);
                                                 
                         break;
                     } case 2: { // Read
                         System.out.println("\n**Lendo musica**");
-                        System.out.print("ID da musica a ser lida: ");
                         
+                        System.out.print("ID da musica a ser lida: ");
                         int readID = Integer.parseInt(br.readLine());
-                        Musica msc = arquivo.read(readID);
+                        int indice = lerIndice();
+                        
+                        Musica msc = arquivo.read(readID, tamBase, indice);
                         if(msc != null)
                             System.out.println("\n" + msc);
                         
                         break;
                     } case 3: { // Update
                         System.out.println("\n**Atualizando musica**");
-                        System.out.print("ID da musica que deve ser alterada: ");
                         
+                        System.out.print("ID da musica que deve ser alterada: ");
                         int updateID = Integer.parseInt(br.readLine());
-                        Musica msc = arquivo.read(updateID);
+                        int indice = lerIndice();
+                        
+                        Musica msc = arquivo.read(updateID, tamBase, indice);
                         if(msc != null){
                             System.out.println("\n" + msc);
                             Musica nova = lerAtualizacao(msc);
                                                     
-                            if(arquivo.update(nova, tamBase))
+                            if(arquivo.update(nova, tamBase, indice))
                                 System.out.println("Musica atualizada com sucesso");
                             else
                                 System.out.println("Erro ao atualizar musica");
@@ -95,32 +107,77 @@ public class TP02 {
                         break;
                     } case 4: { // Delete
                         System.out.println("\n**Deletando musica**");
+                        
                         System.out.print("ID da musica que deve ser deletada: ");   
-                        
                         int deleteID = Integer.parseInt(br.readLine());     
-                        
-                        if(arquivo.delete(deleteID))
+                        int indice = lerIndice();
+
+                        if(arquivo.delete(deleteID, tamBase, indice))
                             System.out.println("Musica removida com sucesso");
                         else
                             System.out.println("Erro ao remover musica");
 
                         break;
-                    } case 5: { // TODO: trocar por algo? ou tirar case
-                        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-                        hash.printHash();
+                    } case 5: { // Indices
+                        int opc2 = -1;
+
+                        do{ 
+                            opc2 = subMenu();
+
+                            switch(opc2){
+                                  case 0: { // Sai do menu interno
+                                    System.out.println("\n**Retornando ao menu anterior...**");
+                                    break;
+                                } case 1: { // Mostrar Arvore B
+                                    System.out.print("\n**Arvore B**");
+
+                                    System.out.println("Estrutura nao implementada");
+
+                                    break;
+                                } case 2: { // Mostrar Hashing Estendido
+                                    System.out.print("\n**Hashing Estendido**");
+
+                                    HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+                                    hash.printHash();
+
+                                    break;
+                                } case 3: { // Mostrar Listas invertidas 
+                                    System.out.print("\n**Listas invertidas**");
+
+                                    System.out.println("Estrutura nao implementada");
+
+                                    break;
+                                }
+                            }
+                        } while(opc2 != 0);
 
                         break;
-                    } case 6: { // Fecha arquivo e encerra programa
+                    } case 6: { // Fecha arquivos e encerra programa
                         System.out.println("\n**Encerrando programa**");
-                        arquivo.close();
+                        
+                        if(arquivo.exists()) arquivo.close();
+                        
+                        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+                        if(hash.exists()) hash.close();
+                        
                         break;
-                    } case 7: { // Deleta arquivo
-                        System.out.println("\n**Deletando arquivo de registros**");
-                       
-                        if(arquivo.deleteFile())
-                            System.out.println("Arquivo deletado com sucesso");
-                        else
-                            System.out.println("Erro ao deletar arquivo");
+                    } case 7: { // Deleta arquivos
+                        System.out.println("\n**Deletando arquivos**");
+                        
+                        if(arquivo.exists()){
+                            if(arquivo.deleteFile())
+                            System.out.println("Arquivo de dados deletado com sucesso");
+                            else
+                            System.out.println("Erro ao deletar arquivo de dados");
+                        }
+                        
+                        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+                        if(hash.exists()){
+                            if(hash.deleteFiles())
+                                System.out.println("Arquivos de indices deletados com sucesso");
+                            else
+                                System.out.println("Erro ao deletar arquivos de indices");
+                        }
 
                         break;
                     }
@@ -150,9 +207,9 @@ public class TP02 {
         System.out.println("2 - Read");
         System.out.println("3 - Update");
         System.out.println("4 - Delete");
-        System.out.println("5 - ???");
+        System.out.println("5 - Mostrar indices");
         System.out.println("6 - Fechar programa");
-        System.out.println("7 - Deletar arquivo");
+        System.out.println("7 - Deletar arquivos");
         
         int opc = -1;
         boolean invalido = false;
@@ -171,7 +228,62 @@ public class TP02 {
 
         return opc;
     }
+    /**
+     * Mostra submenu na tela e solicita ao usuario qual opcao ele deseja executar (Indices)
+     * @return int oocao lida
+     */
+    public static int subMenu() {
+        System.out.println("\nMenu secundario - Indexacao");
+        System.out.println("Escolha uma das opcoes:");
+        System.out.println("0 - Voltar ao menu principal");
+        System.out.println("1 - Mostrar Arvore B");
+        System.out.println("2 - Mostrar Hashing Estendido");
+        System.out.println("3 - Mostrar Listas invertidas");
+        
+        int opc = -1;
+        boolean invalido = false;
+     
+        try{
+            do{
+                System.out.print("-> ");
+                opc = Integer.parseInt(br.readLine());
+                invalido = (opc < 0) || (opc > 3);
+                if(invalido) System.out.println("Opcao invalida! Digite novamente");
+            } while(invalido);
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler opcao do submenu");
+            ioe.printStackTrace();
+        }
+
+        return opc;
+    }
         /* Leituras */
+    /**
+     * Solicita ao usuario que escolha qual indice usar para fazer pesquisa, retornando
+     * valor indicando escola
+     * @return int indice escolhido
+     */
+    public static int lerIndice() {
+        System.out.println("Pesquisar usando qual indice?");
+        System.out.println("1 - Arvore B\n2 - Hashing Estendido");
+        
+        int indice = 0;        
+        boolean invalido = false;
+     
+        try{
+            do{
+                System.out.print("-> ");
+                indice = Integer.parseInt(br.readLine());
+                invalido = (indice != 1) && (indice != 2);
+                if(invalido) System.out.println("Opcao invalida! Digite novamente");
+            } while(invalido);
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler opcao de pesquisa em indice");
+            ioe.printStackTrace();
+        }
+
+        return indice;
+    }
     /**
      * Solicita ao usuario que digite os atributos da musica, criando uma instancia
      * e retornando o objeto criado

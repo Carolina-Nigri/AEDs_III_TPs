@@ -37,7 +37,7 @@ public class CRUD {
         try{
             arq.seek(0);
 
-            if(arq.length() == 0)
+            if(!exists())
                 arq.writeInt(0); // ultimoID inicial
         } catch(IOException ioe){
             System.err.println("Erro ao inicializar CRUD");
@@ -47,6 +47,22 @@ public class CRUD {
 
     /* Metodos */
         /* Manipulacao do arquivo */
+    /**
+     * Verifica se arquivo ja existe 
+     * @return true se sim, false se nao
+     */
+    public boolean exists() {
+        boolean existe = false;
+
+        try{
+            if(arq.length() != 0)
+                existe = true;
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+
+        return existe;
+    }
     /**
      * Fecha arquivo RandomAcessFile
      */
@@ -302,13 +318,18 @@ public class CRUD {
         /* CRUD */
     /**
      * Cria um registro de uma musica, lendo o ultimo ID registrado para setar o ID atual,
-     * atualizando o valor ao final 
+     * atualizando o valor ao final. Por fim, cria registro nos arquivos de indice
      * @param obj Musica a ser registrada no arquivo 
+     * @param tamBase int tamanho inicial da base de dados 
+     * @return true se conseguir criar indices, false caso contrario
      */
-    public void create(Musica obj, int tamBase) {
+    public boolean create(Musica obj, int tamBase) {
+        boolean sucesso = false;
         int ultimoID = -1;
         byte[] objectData;
         long pos;
+        
+        // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
 
         try{
@@ -331,59 +352,58 @@ public class CRUD {
             arq.seek(0); // inicio do arquivo
             arq.writeInt(ultimoID);
 
-            // atualiza arquivos de indice
-            hash.create(ultimoID, pos);
+            // atualiza arquivos de indice e verifica se retorna se deu certo
+            if(hash.create(ultimoID, pos))
+                sucesso = true;
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
             ioe.printStackTrace();
         }
+
+        return sucesso;
     }
     /**
-     * Percorre o arquivo procurando pelo ID da musica que se quer ler, quando encontra
-     * le o registro em bytes e converte para um objeto Musica, que eh retornado
+     * Busca posicao do registro utilizando o indice solicitado, verifica se eh uma posicao
+     * valida, se sim le do arquivo de dados, se nao retorna um objeto vazio 
      * @param ID da musica a ser lida
+     * @param tamBase int tamanho inicial da base de dados 
+     * @param indice int valor do indice escolhido 
      * @return objeto Musica lido do arquivo
      */
-    public Musica read(int ID) {
+    public Musica read(int ID, int tamBase, int indice) {
         Musica obj = null;
+
+        // abre indices
+        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
        
         try{
-            boolean found = false;
-            long pos, arqLen = arq.length();
+            long pos = -1;
+            
+            // busca posicao do registro procurado nos indices
+            switch(indice){
+                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
+                case 2: pos = hash.read(ID); break; 
+            }
+            
             byte lapide;
-            int regSize, regID;
+            int regSize;
 
-            // posiciona ponteiro no inicio, pula cabecalho e salva posicao
-            arq.seek(0); 
-            arq.skipBytes(Integer.BYTES);
-            pos = arq.getFilePointer(); 
+            if(pos != -1){ // encontrou posicao valida no indice
+                arq.seek(pos);
 
-            while(!found && pos != arqLen){
                 // le primeiros dados
                 lapide = arq.readByte();
                 regSize = arq.readInt();
-                regID = arq.readInt();
 
-                if(regID == ID){ // verifica se registro eh o procurado
-                    found = true;
-
-                    if(lapide == ' '){ // lapide falsa => registro nao excluido
-                        // retorna para posicao do ID
-                        arq.seek(pos + 1 + Integer.BYTES); 
-
-                        // le registro em bytes e converte para objeto 
-                        byte[] data = new byte[regSize];
-                        arq.read(data);
-                        obj = new Musica();
-                        obj.fromByteArray(data);
-                    } else{
-                        System.err.println("Registro pesquisado ja foi excluido");
-                    }
-                } else{ // pula bytes de parte do registro (ID já foi pulado)
-                    arq.skipBytes(regSize - Integer.BYTES);
+                if(lapide == ' '){ // lapide falsa => registro nao excluido
+                    // le registro em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    obj = new Musica();
+                    obj.fromByteArray(data);
                 }
-                
-                pos = arq.getFilePointer(); // inicio do proximo registro (lapide)
+            } else{ 
+                System.err.println("Registro pesquisado nao encontrado");
             }
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao ler registro no arquivo");
@@ -398,11 +418,22 @@ public class CRUD {
      * cria o novo no fim do arquivo, se forem de mesmo tamanho apenas escreve no lugar
      * @param objNovo nova musica a ser registrada
      */
-    public boolean update(Musica objNovo, int tamBase) {
+    public boolean update(Musica objNovo, int tamBase, int indice) {
         boolean found = false;
 
+        // abre indices
+        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+
         try{
-            long pos, arqLen = arq.length();
+            long pos = -1;
+            
+            // busca posicao do registro procurado nos indices
+            switch(indice){
+                case 1: System.out.println("Pesquisa na Arvore B"); break;
+                case 2: pos = hash.read(objNovo.getID()); break; 
+            }
+
+            long arqLen = arq.length();
             byte lapide;
             byte[] objectData;
             int regSize, regSizeNovo, regID;
@@ -459,11 +490,22 @@ public class CRUD {
      * ID e marcando sua lapide como verdadeira (*) quando encontrar
      * @param ID da musica a ser deletada
      */
-    public boolean delete(int ID) {
+    public boolean delete(int ID, int tamBase, int indice) {
         boolean found = false;
         
+        // abre indices
+        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+
         try{
-            long pos, arqLen = arq.length();
+            long pos = -1;
+            
+            // busca posicao do registro procurado nos indices
+            switch(indice){
+                case 1: System.out.println("Pesquisa na Arvore B"); break;
+                case 2: pos = hash.read(ID); break; 
+            }
+
+            long arqLen = arq.length();
             byte lapide;
             int regSize, regID;
 

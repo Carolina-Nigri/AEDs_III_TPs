@@ -68,7 +68,7 @@ public class Bucket {
     @Override
     public String toString() {
         String str = "pl = " + pLocal +
-                     "\nn = " + n + "\n";
+                     "\tn = " + n + "\n";
 
         int i = 0;
         while(i < n){ // espaco de chaves e enderecos preenchidos 

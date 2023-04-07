@@ -13,6 +13,9 @@ public class Diretorio {
     private long[] enderecos; // array de enderecos dos buckets
 
     /* Getters e Setters */
+    public int getPGlobal() {
+        return this.pGlobal;
+    }
     public long getEndereco(int i) {
         return this.enderecos[i];
     }
