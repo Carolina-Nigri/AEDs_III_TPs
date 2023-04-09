@@ -8,8 +8,8 @@ import java.io.File;
 /** Classe HashEstendido **/
 public class HashEstendido {
     /* Atributos */
-    private String pathDiretorio = "TP02/data/diretorioHash.db", // paths dos arquivos hash
-                   pathBucket = "TP02/data/bucketHash.db"; 
+    private final String pathDiretorio = "TP02/data/diretorioHash.db", // paths dos arquivos
+                         pathBucket = "TP02/data/bucketHash.db"; 
     private RandomAccessFile rafDiretorio, // arquivos 
                              rafBucket;
     private int qtdChaves; // qtd de chaves do bucket
@@ -99,8 +99,12 @@ public class HashEstendido {
     /**
      * Imprime o diretorio e os buckets do hashing lidos dos arquivos
      */
-    public void printHash() {
+    public void print() {
         try{
+            // abre arquivos
+            rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
+            rafBucket = new RandomAccessFile(pathBucket, "rw");
+
             // le arquivo do diretorio de bytes pra classe 
             byte[] byteArray = new byte[ (int)rafDiretorio.length() ];
             rafDiretorio.seek(0);
@@ -128,6 +132,8 @@ public class HashEstendido {
 
                 pos = rafBucket.getFilePointer();
             }
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
@@ -413,7 +419,7 @@ public class HashEstendido {
      * @return true se conseguir deletar chave, false caso contrario
      */
     public boolean delete(int chave) {
-        boolean found = false;
+        boolean sucesso = false;
 
         try{
             // abre arquivos
@@ -441,10 +447,10 @@ public class HashEstendido {
             // pesquisa chave no bucket
             int n = bEncontrado.getN();
             int i = 0;
-            while( i < n && !found ){
+            while( i < n && !sucesso ){
                 if(chave == bEncontrado.getChave(i)){ // achou
                     bEncontrado.deletePar(i); // deleta chave do bucket
-                    found = true;
+                    sucesso = true;
                 }
 
                 i++;
@@ -462,6 +468,6 @@ public class HashEstendido {
             System.err.println(ioe.getMessage());
         }
 
-        return found;
+        return sucesso;
     } 
 }

@@ -9,39 +9,24 @@ import java.io.File;
 /** Classe CRUD **/
 public class CRUD {
     /* Atributos */
-    protected RandomAccessFile arq;
-    protected String path;
-
-    /* Getters e Setters */
-    public RandomAccessFile getArq() {
-        return this.arq;
-    }
-    public void setArq(RandomAccessFile arq) {
-        this.arq = arq;
-    }
-    public String getPath() {
-        return this.path;
-    }
-    public void setPath(String path) {
-        this.path = path;
-    }
+    private RandomAccessFile arq;
+    private final String path = "TP02/data/musicas.db";
 
     /* Construtores */
-    public CRUD() throws FileNotFoundException { 
-        this("teste.db");
-    }
-    public CRUD(String path) throws FileNotFoundException {
-        this.path = path; 
-        this.arq = new RandomAccessFile(this.path, "rw");
-        
+    public CRUD() {
+        // abrir ou criar arquivo
         try{
-            arq.seek(0);
-
-            if(!exists())
+            arq = new RandomAccessFile(path, "rw");
+            
+            // cria arquivo se nao existir
+            if(!exists()){
+                arq.seek(0);
                 arq.writeInt(0); // ultimoID inicial
+            }
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
-            System.err.println("Erro ao inicializar CRUD");
-            ioe.printStackTrace();
+            System.err.println(ioe.getMessage());
         }
     }
 
@@ -331,6 +316,7 @@ public class CRUD {
         
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+        ArvoreB arvore = new ArvoreB();
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -353,8 +339,7 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            if(hash.create(ultimoID, pos))
-                sucesso = true;
+            sucesso = (hash.create(ultimoID, pos) && arvore.create(ultimoID, pos));
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
             ioe.printStackTrace();
@@ -375,13 +360,14 @@ public class CRUD {
 
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+        ArvoreB arvore = new ArvoreB();
        
         try{
             long pos = -1;
             
             // busca posicao do registro procurado nos indices
             switch(indice){
-                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
+                case 1: pos = arvore.read(ID); break;
                 case 2: pos = hash.read(ID); break; 
             }
             
@@ -425,13 +411,14 @@ public class CRUD {
 
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+        ArvoreB arvore = new ArvoreB();
 
         try{
             long pos = -1;
             
             // busca posicao do registro procurado nos indices
             switch(indice){
-                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
+                case 1: pos = arvore.read(objNovo.getID()); break;
                 case 2: pos = hash.read(objNovo.getID()); break; 
             }
             
@@ -460,8 +447,10 @@ public class CRUD {
                         arq.writeByte('*');
 
                         // deleta registro antigo dos indices e cria novo 
-                        if( hash.delete(objNovo.getID()) && create(objNovo, tamBase) ) 
+                        if( hash.delete(objNovo.getID()) && arvore.delete(objNovo.getID()) 
+                            && create(objNovo, tamBase) ){
                             sucesso = true;
+                        } 
                         
                         System.out.println("Novo ID da musica: "+objNovo.getID());
                     }
@@ -488,13 +477,14 @@ public class CRUD {
         
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+        ArvoreB arvore = new ArvoreB();
 
         try{
             long pos = -1;
             
             // busca posicao do registro procurado nos indices
             switch(indice){
-                case 1: System.out.println("Pesquisa na Arvore B nao implementada"); break;
+                case 1: pos = arvore.read(ID); break;
                 case 2: pos = hash.read(ID); break; 
             }
 
@@ -511,7 +501,7 @@ public class CRUD {
                     arq.writeByte('*');
 
                     // deleta registro dos indices
-                    sucesso = hash.delete(ID);
+                    sucesso = (hash.delete(ID) && arvore.delete(ID));
                 }
             }
         } catch(IOException ioe){

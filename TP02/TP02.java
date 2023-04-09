@@ -1,12 +1,9 @@
 /** Pacotes **/
 package TP02;
-import TP02.classes.CRUD;
-import TP02.classes.HashEstendido;
-import TP02.classes.Musica;
+import TP02.classes.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,7 +28,7 @@ public class TP02 {
             BufferedReader fr = new BufferedReader(new FileReader(basePath));
             
             // arquivo RAF (registros em bytes) 
-            CRUD arquivo = new CRUD("TP02/data/musicas.db");
+            CRUD arquivo = new CRUD();
 
             int tamBase = 100; // tamanho da base csv
             int opc = -1; // opcao do menu
@@ -59,6 +56,8 @@ public class TP02 {
 
                         if(sucesso)
                             System.out.println("Arquivos de indice carregados com sucesso.");
+                        else
+                            System.out.println("Erro ao carregar arquivos de indice!");
 
                         break;
                     } case 1: { // Create
@@ -66,10 +65,12 @@ public class TP02 {
                         
                         Musica msc = lerMusica();
     
+                        System.out.println("\n" + msc);
+                        
                         if(arquivo.create(msc, tamBase))
                             System.out.println("Arquivos de indice atualizados com sucesso.");
-                        
-                        System.out.println("\n" + msc);
+                        else
+                            System.out.println("Erro ao atualizar arquivos de indice!");
                                                 
                         break;
                     } case 2: { // Read
@@ -133,14 +134,15 @@ public class TP02 {
                                 } case 1: { // Mostrar Arvore B
                                     System.out.print("\n**Arvore B**");
 
-                                    System.out.println("Estrutura nao implementada");
+                                    ArvoreB arvore = new ArvoreB();
+                                    arvore.print();
 
                                     break;
                                 } case 2: { // Mostrar Hashing Estendido
                                     System.out.print("\n**Hashing Estendido**");
 
                                     HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-                                    hash.printHash();
+                                    hash.print();
 
                                     break;
                                 } case 3: { // Mostrar Listas invertidas 
@@ -161,6 +163,9 @@ public class TP02 {
                         
                         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
                         if(hash.exists()) hash.close();
+
+                        ArvoreB arvore = new ArvoreB();
+                        if(arvore.exists()) arvore.close();
                         
                         break;
                     } case 7: { // Deleta arquivos
@@ -176,9 +181,17 @@ public class TP02 {
                         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
                         if(hash.exists()){
                             if(hash.deleteFiles())
-                                System.out.println("Arquivos de indices deletados com sucesso");
+                                System.out.println("Arquivos de hash deletados com sucesso");
                             else
-                                System.out.println("Erro ao deletar arquivos de indices");
+                                System.out.println("Erro ao deletar arquivos de hash");
+                        }
+
+                        ArvoreB arvore = new ArvoreB();
+                        if(arvore.exists()){
+                            if(arvore.deleteFile())
+                                System.out.println("Arquivo da arvore B deletado com sucesso");
+                            else
+                                System.out.println("Erro ao deletar arquivo da arvore B");
                         }
 
                         break;
@@ -188,9 +201,6 @@ public class TP02 {
           
             fr.close();
             br.close();
-        } catch(FileNotFoundException fnfe){
-            System.err.println("Arquivo CSV da base de dados nao encontrado");
-            fnfe.printStackTrace();
         } catch(IOException ioe){
             System.err.println("Erro de leitura na funcao principal");
             ioe.printStackTrace();
