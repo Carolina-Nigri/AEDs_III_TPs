@@ -33,6 +33,10 @@ public class TP02 {
             int tamBase = 100; // tamanho da base csv
             int opc = -1; // opcao do menu
 
+            // abre indices
+            HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
+            ArvoreB arvore = new ArvoreB();
+
             do{
                 opc = menu();
 
@@ -65,12 +69,12 @@ public class TP02 {
                         
                         Musica msc = lerMusica();
     
-                        System.out.println("\n" + msc);
-                        
                         if(arquivo.create(msc, tamBase))
                             System.out.println("Arquivos de indice atualizados com sucesso.");
                         else
                             System.out.println("Erro ao atualizar arquivos de indice!");
+                        
+                        System.out.println("\n" + msc);
                                                 
                         break;
                     } case 2: { // Read
@@ -132,21 +136,19 @@ public class TP02 {
                                     System.out.println("\n**Retornando ao menu anterior...**");
                                     break;
                                 } case 1: { // Mostrar Arvore B
-                                    System.out.print("\n**Arvore B**");
+                                    System.out.println("\n**Arvore B**");
 
-                                    ArvoreB arvore = new ArvoreB();
                                     arvore.print();
 
                                     break;
                                 } case 2: { // Mostrar Hashing Estendido
-                                    System.out.print("\n**Hashing Estendido**");
+                                    System.out.println("\n**Hashing Estendido**");
 
-                                    HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
                                     hash.print();
 
                                     break;
                                 } case 3: { // Mostrar Listas invertidas 
-                                    System.out.print("\n**Listas invertidas**");
+                                    System.out.println("\n**Listas invertidas**");
 
                                     System.out.println("Estrutura nao implementada");
 
@@ -160,11 +162,7 @@ public class TP02 {
                         System.out.println("\n**Encerrando programa**");
                         
                         if(arquivo.exists()) arquivo.close();
-                        
-                        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
                         if(hash.exists()) hash.close();
-
-                        ArvoreB arvore = new ArvoreB();
                         if(arvore.exists()) arvore.close();
                         
                         break;
@@ -173,12 +171,11 @@ public class TP02 {
                         
                         if(arquivo.exists()){
                             if(arquivo.deleteFile())
-                            System.out.println("Arquivo de dados deletado com sucesso");
+                                System.out.println("Arquivo de dados deletado com sucesso");
                             else
-                            System.out.println("Erro ao deletar arquivo de dados");
+                                System.out.println("Erro ao deletar arquivo de dados");
                         }
                         
-                        HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
                         if(hash.exists()){
                             if(hash.deleteFiles())
                                 System.out.println("Arquivos de hash deletados com sucesso");
@@ -186,7 +183,6 @@ public class TP02 {
                                 System.out.println("Erro ao deletar arquivos de hash");
                         }
 
-                        ArvoreB arvore = new ArvoreB();
                         if(arvore.exists()){
                             if(arvore.deleteFile())
                                 System.out.println("Arquivo da arvore B deletado com sucesso");

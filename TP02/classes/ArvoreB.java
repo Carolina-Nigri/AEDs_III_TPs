@@ -11,7 +11,6 @@ public class ArvoreB {
     private final String pathArvore = "TP02/data/arvoreB.db"; // path do arquivo
     private RandomAccessFile rafArvore; // arquivo
     private int ordem; // ordem da arvore B (qtd max de filhos)
-    private long raiz; // ponteiro c/endereco da pagina raiz
 
     /* Construtores */  
     public ArvoreB() {
@@ -23,21 +22,13 @@ public class ArvoreB {
         // abrir ou criar arquivo
         try{
             rafArvore = new RandomAccessFile(pathArvore, "rw");
-            // recupera endereco da pagina raiz no arquivo
-            rafArvore.seek(0);
-            this.raiz = rafArvore.readLong();
-
+            
             // criar arquivo se nao existir
             if(!exists()){
                 // escreve endereco da pagina raiz no arquivo
                 rafArvore.seek(0);
+                long raiz = -1;
                 rafArvore.writeLong(raiz);
-                this.raiz = rafArvore.getFilePointer();
-
-                // cria primeira pagina (raiz)
-                Pagina pagRaiz = new Pagina(this.ordem - 1);
-                byte[] byteArray = pagRaiz.toByteArray();
-                rafArvore.write(byteArray);
             }
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
@@ -90,6 +81,9 @@ public class ArvoreB {
         return sucesso;
     }
         /* Funcoes auxiliares */
+    /**
+     * Imprime a arvore B da forma como esta armazenada em arquivo
+     */
     public void print() {
         try{
             // abre arquivo
@@ -97,8 +91,8 @@ public class ArvoreB {
 
             // le e imprime endereco da pagina raiz
             rafArvore.seek(0);           
-            raiz = rafArvore.readLong();
-            System.out.println("0 | raiz = " + raiz + " |\n");
+            long raiz = rafArvore.readLong();
+            System.out.println("0 | raiz = " + raiz + " |");
 
             // imprime paginas
             long pos = rafArvore.getFilePointer();
@@ -108,7 +102,7 @@ public class ArvoreB {
                 
                 rafArvore.read(byteArray);
                 pagina.fromByteArray(byteArray);
-                System.out.println(pos + "" + pagina);
+                System.out.println(pos + " " + pagina);
 
                 pos = rafArvore.getFilePointer();
             }
@@ -117,13 +111,53 @@ public class ArvoreB {
         }   
     }
         /* CRUD do indice */
+    /**
+     * 
+     * @param chave
+     * @param endereco
+     * @return
+     */
     public boolean create(int chave, long endereco) {
         boolean sucesso = false;
 
         try{
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
-       
+            
+            // recupera endereco da pagina raiz no arquivo
+            rafArvore.seek(0);
+            long raiz = rafArvore.readLong();
+
+            if(raiz == -1){ // raiz nao existe
+                // cria primeira pagina (raiz)
+                Pagina pagRaiz = new Pagina(ordem - 1);
+                pagRaiz.setPar(0, chave,endereco);
+                
+                // escreve endereco da pagina raiz no arquivo
+                rafArvore.seek(0);
+                raiz = Long.BYTES;
+                rafArvore.writeLong(raiz);
+                // escreve pagina raiz no arquivo
+                byte[] byteArray = pagRaiz.toByteArray();
+                rafArvore.write(byteArray);
+            } else{
+                // vai p/endereco da pagina raiz
+                rafArvore.seek(raiz);
+
+                // le pagina do arquivo
+                Pagina pagRaiz = new Pagina(ordem - 1);
+                byte[] byteArray = new byte[pagRaiz.getTamPag()];
+                rafArvore.read(byteArray);
+                pagRaiz.fromByteArray(byteArray);
+
+                if(pagRaiz.getN() < (ordem-1)){ // tem espaco na raiz
+                    for(int i = 0; i < pagRaiz.getN(); i++){
+                        
+                    }
+                } else{ // faz recursao p/inserir
+
+                }
+            }
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
@@ -131,7 +165,12 @@ public class ArvoreB {
         }
 
         return sucesso;
-    } 
+    }
+    /**
+     * 
+     * @param chave
+     * @return
+     */
     public long read(int chave) {
         long endereco = -1;
 
@@ -146,7 +185,12 @@ public class ArvoreB {
         }
 
         return endereco;
-    }   
+    }
+    /**
+     * 
+     * @param chave
+     * @return
+     */
     public boolean delete(int chave) {
         boolean sucesso = false;
 

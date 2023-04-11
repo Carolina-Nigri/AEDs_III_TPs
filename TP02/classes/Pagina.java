@@ -26,6 +26,11 @@ public class Pagina {
     public int getChave(int i) {
         return chaves[i];
     }
+    public void setPar(int i, int chave, long endereco) {
+        this.chaves[i] = chave;
+        this.enderecos[i] = endereco;
+        n++;
+    }
     public void setChave(int i, int chave) {
         this.chaves[i] = chave;
         n++;
@@ -73,20 +78,20 @@ public class Pagina {
      */  
     @Override
     public String toString() {
-        String str = " | n = " + n;
+        String str = "| " + n;
 
         int i = 0;
         while(i < n){ // espaco de chaves e enderecos preenchidos 
-            str += " | " + "P("+i+") = " + filhas[i] + " | " + chaves[i] + " => " + enderecos[i];
+            str += " | P(" + filhas[i] + ") | " + chaves[i] + " | " + enderecos[i];
             i++;
         }
-        str += " | " + "P("+i+") = " + filhas[i];
+        str += " | P(" + filhas[i] + ")";
         // /* 
         // imprimir se necessario, evitar p/nao ficar mta coisa na tela
         while(i < nMax){ // espaco de chaves e enderecos nao preenchidos 
-            str += " | " + chaves[i] + " => " + enderecos[i];
+            str += " | " + chaves[i] + " | " + enderecos[i];
             i++;
-            str += " | " + "P("+i+") = " + filhas[i];
+            str += " | P(" + filhas[i] + ")";
         }
         // */
 
