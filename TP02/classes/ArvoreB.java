@@ -11,6 +11,7 @@ public class ArvoreB {
     private final String pathArvore = "TP02/data/arvoreB.db"; // path do arquivo
     private RandomAccessFile rafArvore; // arquivo
     private int ordem; // ordem da arvore B (qtd max de filhos)
+    private int nMax; // numero maximo de chaves p/pagina da arvore B (ordem - 1)
 
     /* Construtores */  
     public ArvoreB() {
@@ -18,6 +19,7 @@ public class ArvoreB {
     }
     public ArvoreB(int ordem) {
         this.ordem = ordem;
+        this.nMax = ordem - 1;
         
         // abrir ou criar arquivo
         try{
@@ -97,7 +99,7 @@ public class ArvoreB {
             // imprime paginas
             long pos = rafArvore.getFilePointer();
             while(pos != rafArvore.length()){
-                Pagina pagina = new Pagina(ordem - 1);
+                Pagina pagina = new Pagina(nMax);
                 byte[] byteArray = new byte[pagina.getTamPag()];
                 
                 rafArvore.read(byteArray);
@@ -127,37 +129,40 @@ public class ArvoreB {
             // recupera endereco da pagina raiz no arquivo
             rafArvore.seek(0);
             long raiz = rafArvore.readLong();
+            Pagina pagRaiz = null;
 
             if(raiz == -1){ // raiz nao existe
-                // cria primeira pagina (raiz)
-                Pagina pagRaiz = new Pagina(ordem - 1);
-                pagRaiz.setPar(0, chave,endereco);
-                
-                // escreve endereco da pagina raiz no arquivo
-                rafArvore.seek(0);
+                // endereco da pagina raiz
                 raiz = Long.BYTES;
-                rafArvore.writeLong(raiz);
-                // escreve pagina raiz no arquivo
-                byte[] byteArray = pagRaiz.toByteArray();
-                rafArvore.write(byteArray);
+                
+                // cria primeira pagina (raiz)
+                pagRaiz = new Pagina(nMax, raiz);
+                pagRaiz.setPar(0, chave, endereco);
             } else{
                 // vai p/endereco da pagina raiz
                 rafArvore.seek(raiz);
 
-                // le pagina do arquivo
-                Pagina pagRaiz = new Pagina(ordem - 1);
+                // le pagina raiz do arquivo
+                pagRaiz = new Pagina(nMax, raiz);
                 byte[] byteArray = new byte[pagRaiz.getTamPag()];
                 rafArvore.read(byteArray);
                 pagRaiz.fromByteArray(byteArray);
-
-                if(pagRaiz.getN() < (ordem-1)){ // tem espaco na raiz
-                    for(int i = 0; i < pagRaiz.getN(); i++){
-                        
-                    }
-                } else{ // faz recursao p/inserir
-
+                
+                if(!pagRaiz.hasFilhas() && pagRaiz.getN() < nMax){ // insere na raiz
+                    pagRaiz.inserir(chave, endereco);
+                } else{ // chama insercao recursiva
+                    pagRaiz = inserir(chave, endereco, raiz);
                 }
             }
+
+            // escreve endereco da pagina raiz no arquivo
+            rafArvore.seek(0);
+            rafArvore.writeLong(pagRaiz.getPos());
+
+            // escreve pagina raiz no arquivo
+            rafArvore.seek(pagRaiz.getPos());
+            byte[] byteArray = pagRaiz.toByteArray();
+            rafArvore.write(byteArray);
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
@@ -165,6 +170,40 @@ public class ArvoreB {
         }
 
         return sucesso;
+    }
+    private Pagina inserir(int chave, long endereco, long pag) {
+        Pagina pagina = null;
+
+        try{
+            // abre arquivo
+            rafArvore = new RandomAccessFile(pathArvore, "rw");
+           
+            // le pagina
+            rafArvore.seek(pag);
+            pagina = new Pagina(nMax, pag);
+            byte[] byteArray = new byte[pagina.getTamPag()];
+            rafArvore.read(byteArray);
+            pagina.fromByteArray(byteArray);
+            
+            if(pagina.getN() > nMax){ // nao tem espaco na pagina
+                // boolean achou = false;
+                // int i = 0;
+                // while(i < nMax && !achou){
+                //     if(chave > pagina.getChave(i)){
+                //         i++;
+                //     } else{
+                //         achou = true;
+                //     }
+                // }
+            }
+
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        } 
+
+        return pagina;
     }
     /**
      * 

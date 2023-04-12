@@ -12,6 +12,7 @@ public class Pagina {
     private int n, // numero de chaves atuais
                 nMax, // numero maximo de chaves
                 tamPag; // tamanho fixo da pagina (bytes)
+    private long pos; // pos da pagina no arquivo
     private int[] chaves; // chaves armazenadas
     private long[] enderecos, // enderecos das chaves
                    filhas; // enderecos das paginas filhas
@@ -23,35 +24,42 @@ public class Pagina {
     public int getTamPag() {
         return tamPag;
     }
-    public int getChave(int i) {
-        return chaves[i];
-    }
     public void setPar(int i, int chave, long endereco) {
         this.chaves[i] = chave;
         this.enderecos[i] = endereco;
+        
         n++;
     }
-    public void setChave(int i, int chave) {
-        this.chaves[i] = chave;
-        n++;
+    public void setPos(long pos){
+        this.pos = pos;
+    }
+    public long getPos(){
+        return this.pos;
+    }
+    public int getChave(int i) {
+        return chaves[i];
     }
     public long getEndereco(int i) {
         return enderecos[i];
     }
-    public void setEndereco(int i, long endereco) {
-        this.enderecos[i] = endereco;
-    }
+
+/* 
     public long getFilha(int i) {
         return filhas[i];
     }
     public void setFilha(int i, long enderecoFilha) {
         this.filhas[i] = enderecoFilha;
     }
+ */
 
     /* Construtor */  
     public Pagina(int nMax) {
+        this(nMax, -1);
+    }
+    public Pagina(int nMax, long pos) {
         this.n = 0;
         this.nMax = nMax;
+        this.pos = pos;
 
         // cria arrays p/armazenar max de chaves
         this.chaves = new int[nMax];
@@ -149,5 +157,58 @@ public class Pagina {
         }
     }
         /* Manipulacao da Arvore */
-    
+    /**
+     * Deleta par da posicao passada da pagina, colocando valores de chave e endereco 
+     * como -1 e diminuindo valor de n
+     * @param i int posicao do par
+     */
+    public void deletePar(int i) {
+        chaves[i] = -1;
+        enderecos[i] = -1;
+        n--;        
+    }
+    /**
+     * 
+     * @return
+     */
+    public boolean hasFilhas() {
+        boolean temFilhas = false;
+        
+        int i = 0;
+        while(i < filhas.length && !temFilhas){
+            if(filhas[i] != -1)
+                temFilhas = true;
+            
+            i++;
+        }
+
+        return temFilhas;
+    }
+    /**
+     * 
+     * @param chave
+     * @param endereco
+     */
+    public void inserir(int chave, long endereco) {
+        n++;
+        
+        int i = 0;
+        while(i < n){
+            if(chaves[i] == -1){
+                chaves[i] = chave;
+                enderecos[i] = endereco;
+            } else if(chave < chaves[i]){
+                int chaveTmp = chaves[i];
+                long enderecoTmp = enderecos[i];
+                
+                chaves[i] = chave;
+                enderecos[i] = endereco;
+
+                chave = chaveTmp;
+                endereco = enderecoTmp;
+            }
+
+            i++;
+        }
+    }
 }
