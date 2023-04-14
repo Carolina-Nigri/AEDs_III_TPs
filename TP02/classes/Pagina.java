@@ -31,8 +31,11 @@ class Pagina {
     public void setN(int n) {
         this.n = n;
     }
+    public int getTamPag() {
+        return tamPag;
+    }
     public long getPosArq() {
-        return this.posArq;
+        return posArq;
     }
     public void setPosArq(long posArq) {
         this.posArq = posArq;
@@ -80,7 +83,69 @@ class Pagina {
     }
 
     /* Metodos */
-       /* Manipulacao da Arvore */
+        /* Basicos */
+    /**
+     * @return atributos da classe como string
+     */  
+    @Override
+    public String toString() {
+        String str = "| ";
+        
+        if(folha) str += "*";
+        else str += "-";
+
+        str += " | " + n;
+
+        int i = 0;
+        while(i < n){ // espaco de chaves e enderecos preenchidos 
+            if(filhas[i] != null) str += " | " + filhas[i].getPosArq();
+            else str += " | -1";
+
+            str += " | " + chaves[i] + " | " + enderecos[i];
+            i++;
+        }
+        if(filhas[i] != null) str += " | " + filhas[i].getPosArq();
+        else str += " | -1";
+
+        str += " |";
+
+        return str;
+    }
+    /**
+     * Converte objeto da classe para um array de bytes, escrevendo seus atributos
+     * @return Byte array do objeto
+     */
+    public byte[] toByteArray() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        
+        try{
+            // escreve se pagina eh folha ou nao
+            if(folha) dos.writeByte('*');
+            else dos.writeByte(' '); 
+
+            // escreve qtd de chaves na pagina
+            dos.writeInt(n);
+
+            // escreve ponteiros p/filhas e pares chave/endereco 
+            int i = 0;
+            while(i < nMax){
+                if(filhas[i] == null) dos.writeLong(-1);
+                else dos.writeLong(filhas[i].getPosArq());
+
+                dos.writeInt(chaves[i]);
+                dos.writeLong(enderecos[i]);
+                i++;
+            }
+            if(filhas[i] == null) dos.writeLong(-1);
+            else dos.writeLong(filhas[i].getPosArq());
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+        
+        return baos.toByteArray();
+    }
+        /* Manipulacao da Arvore */
     /**
      * Insere chave na pagina, procurando posicao de forma a manter ordenada
      * @param chave identificador a ser inserido

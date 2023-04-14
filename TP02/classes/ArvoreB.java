@@ -13,6 +13,14 @@ class ArvoreB {
     private int nMax; // qtd max de chaves
     private Pagina raiz; // pagina raiz
     
+    /* Getters e Setters */
+    public Pagina getRaiz() {
+        return raiz;
+    }
+    public void setRaiz(Pagina raiz) {
+        this.raiz = raiz;
+    }
+
     /* Construtor */  
     public ArvoreB(int ordem) {
         this.nMax = (ordem - 1);
@@ -27,12 +35,14 @@ class ArvoreB {
     public void print() {
         printPagina(raiz);
     }
-    public void printPagina(Pagina pag) {
+    /**
+     * Imprime paginas da arvore, fazendo caminhamento recursivamente
+     * @param pag Pagina atual
+     */
+    private void printPagina(Pagina pag) {
         if(pag != null){
-            for(int i = 0; i < pag.getN(); i++){
-                System.out.print(pag.getChave(i) + " ");
-            }
-            System.out.println("");
+            System.out.println(pag.getPosArq() + " " + pag);
+
             if(!pag.isFolha()){
                 for(int i = 0; i < (pag.getN()+1); i++){
                     printPagina(pag.getFilha(i));
@@ -41,35 +51,23 @@ class ArvoreB {
         }
     }
     /**
-     * Converte objeto da classe para um array de bytes, escrevendo seus atributos
-     * @return Byte array do objeto
+     * Seta as posicoes em arquivo das paginas existentes
+     * @param pag Pagina atual
+     * @param pos valor da posicao em arquivo em que a pagina atual sera armazenada
+     * @return long pos da proxima pagina
      */
-    public byte[] toByteArray() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-        
-        try{
+    private long setarPosArq(Pagina pag, long pos) {
+        if(pag != null){
+            pag.setPosArq(pos);
 
-        } catch(IOException ioe){
-            System.err.println(ioe.getMessage());
+            if(!pag.isFolha()){
+                for(int i = 0; i < (pag.getN()+1); i++){
+                    pos = setarPosArq(pag.getFilha(i), (pos + pag.getTamPag()));
+                }
+            }
         }
-        
-        return baos.toByteArray();
-    }
-    /**
-     * Converte um array de bytes para os atributos da classe, atribuindo
-     * ao objeto corrente
-     * @param byteArray array de bytes de um objeto
-     */
-    public void fromByteArray(byte[] ba) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
-        DataInputStream dis = new DataInputStream(bais);
-        
-        try{
 
-        } catch(IOException ioe){
-            System.err.println(ioe.getMessage());
-        }
+        return pos;
     }
         /* Manipulacao da Arvore */
     /**
@@ -79,8 +77,11 @@ class ArvoreB {
      * raiz) 
      * @param chave identificador a ser inserido
      * @param endereco posicao em arquivo da chave
+     * @return true se conseguir inserir, false caso contrario
      */
-    public void inserir(int chave, long endereco) {
+    public boolean inserir(int chave, long endereco) {
+        boolean inseriu = false;
+
         if(raiz == null){ // raiz nao existe => cria raiz
             raiz = new Pagina(nMax, true);
         } else if(raiz.getN() == nMax){ // raiz existe mas esta cheia
@@ -94,7 +95,10 @@ class ArvoreB {
         } 
 
         // insere internamente (procura pagina folha)
-        inserir(raiz, chave, endereco);
+        inseriu = inserir(raiz, chave, endereco);
+        setarPosArq(raiz, Long.BYTES);
+
+        return inseriu;
     }
     /**
      * Busca posicao de insercao (pagina folha) e insere par, fazendo split a partir
@@ -102,10 +106,14 @@ class ArvoreB {
      * @param pag Pagina atual 
      * @param chave identificador a ser inserido
      * @param endereco posicao em arquivo da chave
+     * @return true se conseguir inserir, false caso contrario
      */
-    private void inserir(Pagina pag, int chave, long endereco) {
+    private boolean inserir(Pagina pag, int chave, long endereco) {
+        boolean inseriu = false;
+
         if(pag.isFolha()){ // pagina eh folha => insere par
             pag.inserir(chave, endereco);
+            inseriu = true;
         } else{ // pagina nao eh folha
             // acha pagina filha onde chave pode ficar
             int posFilha = pag.acharPosFilha(chave);
@@ -123,8 +131,10 @@ class ArvoreB {
             }
 
             // tem espaco na pagina filha (ja tinha ou fez split e liberou)
-            inserir(filha, chave, endereco);
+            inseriu = inserir(filha, chave, endereco);
         }
+
+        return inseriu;
     }
     /**
      * Cria nova raiz, tornando a raiz atual filha da nova e fazendo split
