@@ -35,7 +35,7 @@ public class TP02 {
 
             // abre indices
             HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-            ArvoreB arvore = new ArvoreB();
+            ArvoreArq arvore = new ArvoreArq();
 
             do{
                 opc = menu();

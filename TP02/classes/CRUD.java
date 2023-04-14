@@ -316,7 +316,7 @@ public class CRUD {
         
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-        ArvoreB arvore = new ArvoreB();
+        ArvoreArq arvore = new ArvoreArq();
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -360,7 +360,7 @@ public class CRUD {
 
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-        ArvoreB arvore = new ArvoreB();
+        ArvoreArq arvore = new ArvoreArq();
        
         try{
             long pos = -1;
@@ -411,7 +411,7 @@ public class CRUD {
 
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-        ArvoreB arvore = new ArvoreB();
+        ArvoreArq arvore = new ArvoreArq();
 
         try{
             long pos = -1;
@@ -477,7 +477,7 @@ public class CRUD {
         
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
-        ArvoreB arvore = new ArvoreB();
+        ArvoreArq arvore = new ArvoreArq();
 
         try{
             long pos = -1;
