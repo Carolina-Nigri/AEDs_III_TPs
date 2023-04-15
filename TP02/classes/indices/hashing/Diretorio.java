@@ -1,5 +1,5 @@
 /** Pacotes **/
-package TP02.classes;
+package TP02.classes.indices.hashing;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

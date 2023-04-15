@@ -1,5 +1,5 @@
 /** Pacotes **/
-package TP02.classes;
+package TP02.classes.indices.arvore;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;

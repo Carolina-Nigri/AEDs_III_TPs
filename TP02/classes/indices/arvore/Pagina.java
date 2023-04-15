@@ -1,5 +1,5 @@
 /** Pacotes **/
-package TP02.classes;
+package TP02.classes.indices.arvore;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -7,7 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /** Classe Pagina **/
-class Pagina {
+public class Pagina {
     /* Atributos */
     private boolean folha; // indica se a pagina eh folha ou nao
     private int nMax, // qtd max de chaves

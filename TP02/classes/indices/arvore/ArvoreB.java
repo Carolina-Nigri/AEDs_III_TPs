@@ -1,9 +1,9 @@
 /** Pacotes **/
-package TP02.classes;
+package TP02.classes.indices.arvore;
 import java.lang.Math;
 
 /** Classe ArvoreB **/
-class ArvoreB {
+public class ArvoreB {
     /* Atributos */
     private int nMax; // qtd max de chaves
     private Pagina raiz; // pagina raiz

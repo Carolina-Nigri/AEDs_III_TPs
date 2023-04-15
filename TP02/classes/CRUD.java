@@ -1,5 +1,8 @@
 /** Pacotes **/
 package TP02.classes;
+import TP02.classes.indices.arvore.ArvoreArq;
+import TP02.classes.indices.hashing.HashEstendido;
+import TP02.classes.indices.listas.ListaArq;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -317,6 +320,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
+        ListaArq lista = new ListaArq();
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -339,7 +343,8 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            sucesso = (hash.create(ultimoID, pos) && arvore.create(ultimoID, pos));
+            if(hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && lista.create(obj, pos))
+                sucesso = true;
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
             ioe.printStackTrace();
@@ -412,6 +417,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
+        ListaArq lista = new ListaArq();
 
         try{
             long pos = -1;
@@ -448,7 +454,7 @@ public class CRUD {
 
                         // deleta registro antigo dos indices e cria novo 
                         if( hash.delete(objNovo.getID()) && arvore.delete(objNovo.getID()) 
-                            && create(objNovo, tamBase) ){
+                            && lista.delete(objNovo.getID()) && create(objNovo, tamBase) ){
                             sucesso = true;
                         } 
                         
@@ -478,6 +484,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
+        ListaArq lista = new ListaArq();
 
         try{
             long pos = -1;
@@ -501,7 +508,7 @@ public class CRUD {
                     arq.writeByte('*');
 
                     // deleta registro dos indices
-                    sucesso = (hash.delete(ID) && arvore.delete(ID));
+                    sucesso = (hash.delete(ID) && arvore.delete(ID) && lista.delete(ID));
                 }
             }
         } catch(IOException ioe){

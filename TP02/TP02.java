@@ -1,6 +1,10 @@
 /** Pacotes **/
 package TP02;
-import TP02.classes.*;
+import TP02.classes.CRUD;
+import TP02.classes.Musica;
+import TP02.classes.indices.arvore.ArvoreArq;
+import TP02.classes.indices.hashing.HashEstendido;
+import TP02.classes.indices.listas.ListaArq;
 import java.util.ArrayList;
 import java.util.Date;
 import java.io.BufferedReader;
@@ -36,6 +40,7 @@ public class TP02 {
             // abre indices
             HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
             ArvoreArq arvore = new ArvoreArq();
+            ListaArq lista = new ListaArq();
 
             do{
                 opc = menu();
@@ -147,10 +152,10 @@ public class TP02 {
                                     hash.print();
 
                                     break;
-                                } case 3: { // Mostrar Listas invertidas 
+                                } case 3: { // Listas invertidas 
                                     System.out.println("\n**Listas invertidas**");
 
-                                    System.out.println("Estrutura nao implementada");
+                                    // TODO: pesquisar e mostrar das listas invertidas 
 
                                     break;
                                 }
@@ -164,6 +169,7 @@ public class TP02 {
                         if(arquivo.exists()) arquivo.close();
                         if(hash.exists()) hash.close();
                         if(arvore.exists()) arvore.close();
+                        if(lista.exists()) lista.close();
                         
                         break;
                     } case 7: { // Deleta arquivos
@@ -171,23 +177,30 @@ public class TP02 {
                         
                         if(arquivo.exists()){
                             if(arquivo.deleteFile())
-                                System.out.println("Arquivo de dados deletado com sucesso");
+                                System.out.println("Arquivo de dados deletado com sucesso.");
                             else
-                                System.out.println("Erro ao deletar arquivo de dados");
+                                System.out.println("Erro ao deletar arquivo de dados.");
                         }
                         
                         if(hash.exists()){
                             if(hash.deleteFiles())
-                                System.out.println("Arquivos de hash deletados com sucesso");
+                                System.out.println("Arquivos de hash deletados com sucesso.");
                             else
-                                System.out.println("Erro ao deletar arquivos de hash");
+                                System.out.println("Erro ao deletar arquivos de hash.");
                         }
 
                         if(arvore.exists()){
                             if(arvore.deleteFile())
-                                System.out.println("Arquivo da arvore B deletado com sucesso");
+                                System.out.println("Arquivo da arvore B deletado com sucesso.");
                             else
-                                System.out.println("Erro ao deletar arquivo da arvore B");
+                                System.out.println("Erro ao deletar arquivo da arvore B.");
+                        }
+
+                        if(lista.exists()){
+                            if(lista.deleteFiles())
+                                System.out.println("Arquivos de listas invertidas deletados com sucesso.");
+                            else
+                                System.out.println("Erro ao deletar arquivos de listas invertidas.");
                         }
 
                         break;
