@@ -111,7 +111,6 @@ public class ArvoreArq {
             System.err.println(ioe.getMessage());
         }   
     }
-
     /**
      * Escreve arvore B em arquivo, colocando endereco da raiz primeiro, depois as paginas
      * em suas respectivas posicoes (chama funcao recursiva que escreve as paginas)
@@ -231,6 +230,54 @@ public class ArvoreArq {
             System.err.println(ioe.getMessage());
         }
     }
+    /**
+     * Pesquisa chave nas paginas filhas, recursivamente, retornando o endereco da chave
+     * @param pag Pagina atual
+     * @param chave int (ID) a ser pesquisado
+     * @return long endereco no arquivo de dados da chave 
+     */    
+    private long pesquisaFilhas(Pagina pag, int chave){
+        long endereco = -1;
+
+        try{
+            // abre arquivo
+            rafArvore = new RandomAccessFile(pathArvore, "rw");
+            
+            if(pag != null){
+                // le pagina
+                byte[] byteArray = new byte[pag.getTamPag()];
+                rafArvore.seek(pag.getPosArq());
+                rafArvore.read(byteArray);
+                pag.fromByteArray(byteArray);
+
+                // procura chave na pagina
+                int i = 0; 
+                boolean achou = false;
+                while(i > -1 && i < pag.getN() && !achou){
+                    if(chave == pag.getChave(i)){ 
+                        achou = true;
+                        endereco = pag.getEndereco(i);
+                    } else if(chave > pag.getChave(i)){ 
+                        i++;
+                    } else{ 
+                        i--;
+                    }
+                }
+                if(i == -1) i++;
+                
+                // nao achou na pag e ela nao eh folha => pesquisa nas paginas filhas
+                if(!achou && !pag.isFolha()){
+                    endereco = pesquisaFilhas(pag.getFilha(i), chave);
+                }
+            }
+        } catch(FileNotFoundException fnfe){
+            System.err.println(fnfe.getMessage());
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
+
+        return endereco;
+    }
         /* CRUD do indice */
     /**
      * Insere par chave e endereco no indice em arvore B, lendo arvore atual do arquivo,
@@ -282,31 +329,40 @@ public class ArvoreArq {
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
             
-            // le endereco da raiz 
+            // le endereco da raiz
             rafArvore.seek(0);
-            long pos = rafArvore.readLong();
-            boolean achou = false;
+            long pontRaiz = rafArvore.readLong();
 
-            // while(pos != rafArvore.length() && !achou){
-            //     rafArvore.seek(pos);
-                
-            //     byte bFolha = rafArvore.readByte();
-            //     int n = rafArvore.readInt();
-                
-            //     long posFilha = -1;
-            //     int i = 0;
-            //     while(i < n && !achou){
-            //         posFilha = rafArvore.readLong();
-            //         int chaveArq = rafArvore.readInt();
-                    
-            //         if(chave == chaveArq){
-            //             endereco = rafArvore.readLong(); 
-            //             achou = true;
-            //         } else if(chave < chaveArq && bFolha == ' '){
-            //             pos = posFilha;
-            //         } else if(chave > chaveArq && bFolha == ' ')
-            //     }
-            // }
+            if(pontRaiz == -1){ // verifica se raiz existe
+                System.err.println("Indice usando Arvore B esta vazio.");
+            } else{
+                // le raiz
+                Pagina raiz = new Pagina((ordem-1), true, pontRaiz);
+                byte[] byteArray = new byte[raiz.getTamPag()];
+                rafArvore.seek(pontRaiz);
+                rafArvore.read(byteArray);
+                raiz.fromByteArray(byteArray);
+
+                // procura chave na raiz
+                int i = 0; 
+                boolean achou = false;
+                while(i > -1 && i < raiz.getN() && !achou){
+                    if(chave == raiz.getChave(i)){ 
+                        achou = true;
+                        endereco = raiz.getEndereco(i);
+                    } else if(chave > raiz.getChave(i)){ 
+                        i++;
+                    } else{ 
+                        i--;
+                    }
+                }
+                if(i == -1) i++;
+
+                // nao achou na raiz e ela nao eh folha => pesquisa nas paginas filhas
+                if(!achou && !raiz.isFolha()){
+                    endereco = pesquisaFilhas(raiz.getFilha(i), chave);
+                }
+            }
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
@@ -315,15 +371,34 @@ public class ArvoreArq {
 
         return endereco;
     }
-
+    /**
+     * Remove par chave e endereco do indice em arvore B, lendo arvore atual do arquivo,
+     * removendo, em memoria primaria, o par da posicao correta e escrevendo arvore de volta
+     * no arquivo 
+     * @param chave int (ID) a ser removido
+     * @return true se conseguir remover, false caso contrario
+     */
     public boolean delete(int chave) {
         boolean sucesso = false;
 
         try{
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
+            
+            // le endereco da raiz
             rafArvore.seek(0);
-       
+            long pontRaiz = rafArvore.readLong();
+            
+            // se arvore nao estiver vazia, le do arquivo
+            if(pontRaiz != -1){
+                leArvore(); 
+            }
+            
+            // faz remocao na arvore
+            sucesso = arvore.remover(chave);
+            
+            // escreve de volta no arquivo
+            escreveArvore();
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){

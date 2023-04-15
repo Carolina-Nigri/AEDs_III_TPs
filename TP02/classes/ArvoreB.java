@@ -66,6 +66,20 @@ class ArvoreB {
     }
         /* Manipulacao da Arvore */
     /**
+     * TODO: implementar remover
+     * @param chave identificador a ser inserido
+     * @return true se conseguir remover, false caso contrario
+     */
+    public boolean remover(int chave) {
+        boolean removeu = false;
+        
+        
+
+        setarPosArq(raiz, Long.BYTES);
+
+        return removeu;
+    }
+    /**
      * Insere par chave e endereco na arvore B. Se raiz nao existir, cria e insere nela.
      * Caso contrario, verifica se raiz esta cheia e faz split antes de inserir internamente
      * ou insere internamente direto se raiz tiver espaco (nao precisa fazer split p/mudar 

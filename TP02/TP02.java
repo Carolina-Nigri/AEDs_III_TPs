@@ -88,7 +88,7 @@ public class TP02 {
                         if(msc != null)
                             System.out.println("\n" + msc);
                         else
-                            System.out.println("Musica buscada nao encontrada");
+                            System.out.println("Musica buscada nao encontrada.");
                         
                         break;
                     } case 3: { // Update
@@ -104,11 +104,11 @@ public class TP02 {
                             Musica nova = lerAtualizacao(msc);
                                                     
                             if(arquivo.update(nova, tamBase, indice))
-                                System.out.println("Musica atualizada com sucesso");
+                                System.out.println("Musica atualizada com sucesso.");
                             else
-                                System.out.println("Erro ao atualizar musica");
+                                System.out.println("Erro ao atualizar musica.");
                         } else{
-                            System.out.println("Musica a ser atualizada nao encontrada");
+                            System.out.println("Musica a ser atualizada nao encontrada.");
                         }
 
                         break;
@@ -120,9 +120,9 @@ public class TP02 {
                         int indice = lerIndice();
 
                         if(arquivo.delete(deleteID, tamBase, indice))
-                            System.out.println("Musica removida com sucesso");
+                            System.out.println("Musica removida com sucesso.");
                         else
-                            System.out.println("Erro ao remover musica");
+                            System.out.println("Erro ao remover musica.");
 
                         break;
                     } case 5: { // Indices
@@ -246,7 +246,7 @@ public class TP02 {
         System.out.println("0 - Voltar ao menu principal");
         System.out.println("1 - Mostrar Arvore B");
         System.out.println("2 - Mostrar Hashing Estendido");
-        System.out.println("3 - Mostrar Listas invertidas");
+        System.out.println("3 - Listas invertidas");
         
         int opc = -1;
         boolean invalido = false;

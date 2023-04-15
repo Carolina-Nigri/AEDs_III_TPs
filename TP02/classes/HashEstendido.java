@@ -144,14 +144,14 @@ public class HashEstendido {
      * @param p profundidade com que se ira calcular a funcao
      * @return int posicao do hash (bucket a ser inserido)
      */
-    public int hash(int chave, int p) {
+    private int hash(int chave, int p) {
         return chave % ((int) Math.pow(2, p));
     }
     /**
      * Aumenta em 1 a profundidade global do diretorio, criando novas posicoes e atualizando
      * os ponteiros, armazenando mudancas no arquivo 
      */
-    public void aumentarPGlobal() {
+    private void aumentarPGlobal() {
         try{
             // abre arquivos
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
@@ -183,7 +183,7 @@ public class HashEstendido {
      * @param pL int profundidade local atual
      * @param bucket int qual o bucket que se quer aumentar a profundidade
      */
-    public void aumentarPLocal(int bucket, int pL) {
+    private void aumentarPLocal(int bucket, int pL) {
         try{
             // abre arquivos
             rafDiretorio = new RandomAccessFile(pathDiretorio, "rw");
