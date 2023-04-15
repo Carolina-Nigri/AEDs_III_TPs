@@ -1,11 +1,6 @@
 /** Pacotes **/
 package TP02.classes;
 import java.lang.Math;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 /** Classe ArvoreB **/
 class ArvoreB {
@@ -41,7 +36,7 @@ class ArvoreB {
      */
     private void printPagina(Pagina pag) {
         if(pag != null){
-            System.out.println(pag.getPosArq() + " " + pag);
+            System.out.println(pag);
 
             if(!pag.isFolha()){
                 for(int i = 0; i < (pag.getN()+1); i++){

@@ -98,8 +98,12 @@ public class ArvoreArq {
             // le e imprime paginas
             long pos = rafArvore.getFilePointer();
             while(pos != rafArvore.length()){
-                Pagina pag = lePagina(pos);
-                System.out.println(pos + " " + pag);
+                Pagina pag = new Pagina((ordem-1), true, pos);
+                byte[] byteArray = new byte[pag.getTamPag()];
+                rafArvore.read(byteArray);
+
+                pag.fromByteArray(byteArray);
+                System.out.println(pag);
 
                 pos = rafArvore.getFilePointer(); 
             }   
@@ -107,6 +111,7 @@ public class ArvoreArq {
             System.err.println(ioe.getMessage());
         }   
     }
+
     /**
      * Escreve arvore B em arquivo, colocando endereco da raiz primeiro, depois as paginas
      * em suas respectivas posicoes (chama funcao recursiva que escreve as paginas)
@@ -161,7 +166,9 @@ public class ArvoreArq {
             System.err.println(ioe.getMessage());
         }
     }
-    
+    /**
+     * Le arvore do arquivo, chamando funcao que le paginas filhas recursivamente, se tiver
+     */
     private void leArvore() {
         try{
             // abre arquivo
@@ -175,8 +182,19 @@ public class ArvoreArq {
                 arvore.setRaiz(null);
             } else{
                 // le raiz
-                Pagina raiz = lePagina(pontRaiz);
+                Pagina raiz = new Pagina((ordem-1), true, pontRaiz);
+                byte[] byteArray = new byte[raiz.getTamPag()];
+                rafArvore.seek(pontRaiz);
+                rafArvore.read(byteArray);
+                raiz.fromByteArray(byteArray);
                 arvore.setRaiz(raiz);
+
+                // raiz nao eh folha => le paginas filhas
+                if(!arvore.getRaiz().isFolha()){
+                    for(int i = 0; i < (arvore.getRaiz().getN()+1); i++){
+                        lePaginasFilhas(arvore.getRaiz().getFilha(i));
+                    }
+                }
             }
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
@@ -184,49 +202,27 @@ public class ArvoreArq {
             System.err.println(ioe.getMessage());
         }
     }
-    
-    private Pagina lePagina(long pos){
-        Pagina pag = null;
-
+    /**
+     * Le paginas filhas, recursivamente, do arquivo
+     * @param pag Pagina atual
+     */
+    private void lePaginasFilhas(Pagina pag){
         try{
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
-
-            if(pos > 0 && pos != rafArvore.length()){
-                rafArvore.seek(pos);
-
-                // setar posicao em arquivo da pagina
-                pag = new Pagina((ordem-1), false);
-                pag.setPosArq(pos);
-
-                // le se pagina eh folha ou nao
-                byte bFolha = rafArvore.readByte();
-                if(bFolha == '*') pag.setFolha(true);
-
-                // le qtd de chaves
-                pag.setN(rafArvore.readInt());
+            
+            if(pag != null){
+                // le pagina
+                byte[] byteArray = new byte[pag.getTamPag()];
+                rafArvore.seek(pag.getPosArq());
+                rafArvore.read(byteArray);
+                pag.fromByteArray(byteArray);
                 
-                // le ponteiros p/filhas e pares chave/endereco
-                int i = 0;
-                while(i < (ordem-1)){
-                    long posFilha = rafArvore.readLong();
-                    if(posFilha == -1){ // nao tem filha
-                        pag.setFilha(i, null);
-                    } else{ // le pagina filha (recursivamente)
-                        Pagina filha = lePagina(posFilha);
-                        pag.setFilha(i, filha);
-                    } 
-                    
-                    pag.setChave(i, rafArvore.readInt());
-                    pag.setEndereco(i, rafArvore.readLong());
-                    i++;
-                }
-                long posFilha = rafArvore.readLong();
-                if(posFilha == -1){ // nao tem filha
-                    pag.setFilha(i, null);
-                } else{ // le pagina filha (recursivamente)
-                    Pagina filha = lePagina(posFilha);
-                    pag.setFilha(i, filha);
+                // pagina nao eh folha => le paginas filhas
+                if(!pag.isFolha()){
+                    for(int i = 0; i < (pag.getN()+1); i++){
+                        lePaginasFilhas(pag.getFilha(i));
+                    }
                 }
             }
         } catch(FileNotFoundException fnfe){
@@ -234,11 +230,16 @@ public class ArvoreArq {
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
-
-        return pag;
     }
         /* CRUD do indice */
-   
+    /**
+     * Insere par chave e endereco no indice em arvore B, lendo arvore atual do arquivo,
+     * inserindo, em memoria primaria, o par na posicao correta e escrevendo arvore de volta
+     * no arquivo 
+     * @param chave int (ID) a ser inserido
+     * @param endereco long posicao no arquivo de dados da chave
+     * @return true se conseguir inserir, false caso contrario
+     */
     public boolean create(int chave, long endereco) {
         boolean sucesso = false;
 
@@ -268,16 +269,44 @@ public class ArvoreArq {
 
         return sucesso;
     }
-
-    // TODO: implementar Read e Delete
-
+    /**
+     * Pesquisa chave na arvore, buscando qual pagina ela deve estar e retornando endereco 
+     * da chave no arquivo de dados
+     * @param chave int (ID) a ser pesquisado
+     * @return long endereco no arquivo de dados da chave 
+     */
     public long read(int chave) {
         long endereco = -1;
 
         try{
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
-       
+            
+            // le endereco da raiz 
+            rafArvore.seek(0);
+            long pos = rafArvore.readLong();
+            boolean achou = false;
+
+            // while(pos != rafArvore.length() && !achou){
+            //     rafArvore.seek(pos);
+                
+            //     byte bFolha = rafArvore.readByte();
+            //     int n = rafArvore.readInt();
+                
+            //     long posFilha = -1;
+            //     int i = 0;
+            //     while(i < n && !achou){
+            //         posFilha = rafArvore.readLong();
+            //         int chaveArq = rafArvore.readInt();
+                    
+            //         if(chave == chaveArq){
+            //             endereco = rafArvore.readLong(); 
+            //             achou = true;
+            //         } else if(chave < chaveArq && bFolha == ' '){
+            //             pos = posFilha;
+            //         } else if(chave > chaveArq && bFolha == ' ')
+            //     }
+            // }
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){
@@ -293,6 +322,7 @@ public class ArvoreArq {
         try{
             // abre arquivo
             rafArvore = new RandomAccessFile(pathArvore, "rw");
+            rafArvore.seek(0);
        
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());

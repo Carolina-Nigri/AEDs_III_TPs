@@ -59,15 +59,18 @@ class Pagina {
         this.filhas[i] = filha;
     }   
 
-    /* Construtor */
-    public Pagina(int nMax, boolean folha) {
+    /* Construtores */
+    public Pagina(int nMax, boolean folha){
+        this(nMax, folha, -1);
+    }
+    public Pagina(int nMax, boolean folha, long posArq) {
         this.folha = folha;
         this.nMax = nMax;
         this.n = 0;
-
+        
         // tamanho da pagina = folha + n + (nMax) chaves e enderecos + (nMax+1) filhas
         this.tamPag = 1 + Integer.BYTES + (nMax * (Integer.BYTES+Long.BYTES)) + ((nMax+1) * Long.BYTES); 
-        this.posArq = -1;
+        this.posArq = posArq;
 
         this.chaves = new int[nMax];
         this.enderecos = new long[nMax];
@@ -89,7 +92,7 @@ class Pagina {
      */  
     @Override
     public String toString() {
-        String str = "| ";
+        String str = "" + posArq + " | ";
         
         if(folha) str += "*";
         else str += "-";
@@ -130,20 +133,65 @@ class Pagina {
             // escreve ponteiros p/filhas e pares chave/endereco 
             int i = 0;
             while(i < nMax){
-                if(filhas[i] == null) dos.writeLong(-1);
-                else dos.writeLong(filhas[i].getPosArq());
+                if(filhas[i] == null) 
+                    dos.writeLong(-1);
+                else 
+                    dos.writeLong(filhas[i].getPosArq());
 
                 dos.writeInt(chaves[i]);
                 dos.writeLong(enderecos[i]);
                 i++;
             }
-            if(filhas[i] == null) dos.writeLong(-1);
-            else dos.writeLong(filhas[i].getPosArq());
+            if(filhas[i] == null) 
+                dos.writeLong(-1);
+            else 
+                dos.writeLong(filhas[i].getPosArq());
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
         
         return baos.toByteArray();
+    }
+    /**
+     * Converte um array de bytes para os atributos da classe, atribuindo
+     * ao objeto corrente
+     * @param byteArray array de bytes de um objeto
+     */
+    public void fromByteArray(byte[] ba) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+        DataInputStream dis = new DataInputStream(bais);
+        
+        try{
+            // le se pagina eh folha ou nao
+            byte bFolha = dis.readByte();
+            if(bFolha == '*') folha = true;
+            else folha = false; 
+
+            // le qtd de chaves na pagina
+            n = dis.readInt();
+
+            // le ponteiros p/filhas e pares chave/endereco 
+            int i = 0;
+            long posFilha = -1;
+            while(i < nMax){
+                posFilha = dis.readLong();
+                if(posFilha == -1) 
+                    filhas[i] = null;
+                else 
+                    filhas[i] = new Pagina(nMax, true, posFilha);
+
+                chaves[i] = dis.readInt();
+                enderecos[i] = dis.readLong();
+                i++;
+            }
+            posFilha = dis.readLong();
+            if(posFilha == -1) 
+                filhas[i] = null;
+            else 
+                filhas[i] = new Pagina(nMax, true, posFilha);
+        } catch(IOException ioe){
+            System.err.println(ioe.getMessage());
+        }
     }
         /* Manipulacao da Arvore */
     /**
