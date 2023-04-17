@@ -4,7 +4,7 @@ import TP02.classes.CRUD;
 import TP02.classes.Musica;
 import TP02.classes.indices.arvore.ArvoreArq;
 import TP02.classes.indices.hashing.HashEstendido;
-import TP02.classes.indices.listas.ListaArq;
+import TP02.classes.indices.listas.ListasInvertidas;
 import java.util.ArrayList;
 import java.util.Date;
 import java.io.BufferedReader;
@@ -40,7 +40,7 @@ public class TP02 {
             // abre indices
             HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
             ArvoreArq arvore = new ArvoreArq();
-            ListaArq lista = new ListaArq();
+            ListasInvertidas listas = new ListasInvertidas();
 
             do{
                 opc = menu();
@@ -152,10 +152,38 @@ public class TP02 {
                                     hash.print();
 
                                     break;
-                                } case 3: { // Listas invertidas 
+                                } case 3: { // Mostrar Lista invertida de nomes 
+                                    System.out.println("\n**Lista invertida de nomes**");
+
+                                    listas.printNomes();
+
+                                    break;
+                                } case 4: { // Mostrar Lista invertida de artistas
+                                    System.out.println("\n**Lista invertida de artistas**");
+
+                                    listas.printArtistas();
+
+                                    break;
+                                } case 5: { // Listas invertidas 
                                     System.out.println("\n**Listas invertidas**");
 
-                                    // TODO: pesquisar e mostrar das listas invertidas 
+                                    int pesq = lerPesquisa();
+                                    System.out.print("Query de pesquisa: ");
+                                    String query = br.readLine();
+                                    
+                                    long[] ocorrencias = listas.pesquisar(query, pesq);
+
+                                    if(ocorrencias == null){
+                                        System.out.println("Nenhum resultado encontrado para essa pesquisa.");
+                                    } else{
+                                        for(int i = 0; i < ocorrencias.length; i++){
+                                            Musica msc = arquivo.readPos(ocorrencias[i]);
+                                            if(msc != null)
+                                                System.out.println("\n" + msc);
+                                            else
+                                                System.out.println("Musica pesquisada nao encontrada.");
+                                        }
+                                    }
 
                                     break;
                                 }
@@ -169,7 +197,7 @@ public class TP02 {
                         if(arquivo.exists()) arquivo.close();
                         if(hash.exists()) hash.close();
                         if(arvore.exists()) arvore.close();
-                        if(lista.exists()) lista.close();
+                        if(listas.exists()) listas.close();
                         
                         break;
                     } case 7: { // Deleta arquivos
@@ -196,8 +224,8 @@ public class TP02 {
                                 System.out.println("Erro ao deletar arquivo da arvore B.");
                         }
 
-                        if(lista.exists()){
-                            if(lista.deleteFiles())
+                        if(listas.exists()){
+                            if(listas.deleteFiles())
                                 System.out.println("Arquivos de listas invertidas deletados com sucesso.");
                             else
                                 System.out.println("Erro ao deletar arquivos de listas invertidas.");
@@ -259,7 +287,9 @@ public class TP02 {
         System.out.println("0 - Voltar ao menu principal");
         System.out.println("1 - Mostrar Arvore B");
         System.out.println("2 - Mostrar Hashing Estendido");
-        System.out.println("3 - Listas invertidas");
+        System.out.println("3 - Mostrar Lista invertida de nomes");
+        System.out.println("4 - Mostrar Lista invertida de artistas");
+        System.out.println("5 - Pesquisar usando Listas invertidas");
         
         int opc = -1;
         boolean invalido = false;
@@ -268,7 +298,7 @@ public class TP02 {
             do{
                 System.out.print("-> ");
                 opc = Integer.parseInt(br.readLine());
-                invalido = (opc < 0) || (opc > 3);
+                invalido = (opc < 0) || (opc > 6);
                 if(invalido) System.out.println("Opcao invalida! Digite novamente");
             } while(invalido);
         } catch(IOException ioe){
@@ -280,8 +310,34 @@ public class TP02 {
     }
         /* Leituras */
     /**
+     * Solicita ao usuario que escolha qual tipo de pesquisa deseja fazer nas listas 
+     * invertidas, retornando valor indicando escolha
+     * @return int pesquisa escolhida
+     */
+    public static int lerPesquisa() {
+        System.out.println("Pesquisar por:");
+        System.out.println("1 - Nomes\n2 - Artistas\n3 - Ambos");
+       
+        int pesq = 0;
+        boolean invalido = false;
+     
+        try{
+            do{
+                System.out.print("-> ");
+                pesq = Integer.parseInt(br.readLine());
+                invalido = (pesq < 1) || (pesq > 3);
+                if(invalido) System.out.println("Opcao invalida! Digite novamente");
+            } while(invalido);
+        } catch(IOException ioe){
+            System.err.println("Erro ao ler opcao de pesquisa em listas");
+            ioe.printStackTrace();
+        }
+
+        return pesq;
+    }
+    /**
      * Solicita ao usuario que escolha qual indice usar para fazer pesquisa, retornando
-     * valor indicando escola
+     * valor indicando escolha
      * @return int indice escolhido
      */
     public static int lerIndice() {

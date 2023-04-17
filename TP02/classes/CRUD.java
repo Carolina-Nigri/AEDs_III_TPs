@@ -2,7 +2,7 @@
 package TP02.classes;
 import TP02.classes.indices.arvore.ArvoreArq;
 import TP02.classes.indices.hashing.HashEstendido;
-import TP02.classes.indices.listas.ListaArq;
+import TP02.classes.indices.listas.ListasInvertidas;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -320,7 +320,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListaArq lista = new ListaArq();
+        ListasInvertidas listas = new ListasInvertidas();
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -343,8 +343,10 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            if(hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && lista.create(obj, pos))
+            if( hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && 
+                listas.create(obj.getName(), obj.getArtists(), pos) ){
                 sucesso = true;
+            }
         } catch(IOException ioe){
             System.err.println("Erro de leitura/escrita ao criar registro no arquivo");
             ioe.printStackTrace();
@@ -367,19 +369,32 @@ public class CRUD {
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
        
+        long pos = -1;
+        
+        // busca posicao do registro procurado nos indices
+        switch(indice){
+            case 1: pos = arvore.read(ID); break;
+            case 2: pos = hash.read(ID); break; 
+        }
+        
+        obj = readPos(pos);
+
+        return obj;
+    }
+    /**
+     * Le registro do arquivo na posicao passada, verificando se eh uma posicao valida, 
+     * se sim le do arquivo de dados, se nao retorna um objeto vazio 
+     * @param pos long endereco do registro em arquivo 
+     * @return objeto Musica lido do arquivo
+     */
+    public Musica readPos(long pos) {
+        Musica obj = null;
+
         try{
-            long pos = -1;
-            
-            // busca posicao do registro procurado nos indices
-            switch(indice){
-                case 1: pos = arvore.read(ID); break;
-                case 2: pos = hash.read(ID); break; 
-            }
-            
             byte lapide;
             int regSize;
 
-            if(pos != -1){ // encontrou posicao valida no indice
+            if(pos != -1){ // verifica se a posicao eh valida
                 arq.seek(pos);
 
                 // le primeiros dados
@@ -417,7 +432,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListaArq lista = new ListaArq();
+        ListasInvertidas listas = new ListasInvertidas();
 
         try{
             long pos = -1;
@@ -454,7 +469,7 @@ public class CRUD {
 
                         // deleta registro antigo dos indices e cria novo 
                         if( hash.delete(objNovo.getID()) && arvore.delete(objNovo.getID()) 
-                            && lista.delete(objNovo.getID()) && create(objNovo, tamBase) ){
+                            && listas.delete(pos) && create(objNovo, tamBase) ){
                             sucesso = true;
                         } 
                         
@@ -484,7 +499,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListaArq lista = new ListaArq();
+        ListasInvertidas listas = new ListasInvertidas();
 
         try{
             long pos = -1;
@@ -508,7 +523,7 @@ public class CRUD {
                     arq.writeByte('*');
 
                     // deleta registro dos indices
-                    sucesso = (hash.delete(ID) && arvore.delete(ID) && lista.delete(ID));
+                    sucesso = (hash.delete(ID) && arvore.delete(ID) && listas.delete(pos));
                 }
             }
         } catch(IOException ioe){
