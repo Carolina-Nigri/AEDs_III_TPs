@@ -143,20 +143,19 @@ public class ListaInvertida {
     private ArrayList<Long> copiaIguais(ArrayList<Long> endTmp, ArrayList<Long> enderecos) {
         ArrayList<Long> resultante = new ArrayList<Long>();
         
-        // TODO: provavel fonte de problema
         // copia enderecos iguais (AND das duas pesquisas)
         int i = 0, j = 0;
         while(i < enderecos.size() && j < endTmp.size()){
-            if(enderecos.get(i) == endTmp.get(j)){
+            if(enderecos.get(i).equals(endTmp.get(j))){
                 resultante.add(enderecos.get(i));    
                 i++; j++;
-            } else if(enderecos.get(i) < endTmp.get(j)){
+            } else if(enderecos.get(i).compareTo(endTmp.get(j)) < 0){
                 i++;
             } else{
                 j++;
             }
         }
-    
+
         return resultante;
     }
     /**

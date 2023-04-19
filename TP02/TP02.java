@@ -169,9 +169,18 @@ public class TP02 {
 
                                     int pesq = lerPesquisa();
                                     System.out.print("Query de pesquisa: ");
-                                    String query = br.readLine();
+                                    String query = "", nome = "", artista = "";
+                                    
+                                    if(pesq == 3){
+                                        System.out.print("\nNome: ");
+                                        nome = br.readLine(); 
+                                        System.out.print("\nArtista: ");
+                                        artista = br.readLine();
+                                    } else{
+                                        query = br.readLine();
+                                    }
 
-                                    ArrayList<Long> ocorrencias = listas.pesquisar(query, pesq);
+                                    ArrayList<Long> ocorrencias = listas.pesquisar(query, nome, artista, pesq);
 
                                     if(ocorrencias.size() == 0){
                                         System.out.println("Nenhum resultado encontrado para essa pesquisa.");

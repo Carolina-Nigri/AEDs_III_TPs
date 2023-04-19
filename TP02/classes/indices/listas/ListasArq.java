@@ -191,11 +191,8 @@ public class ListasArq {
      * @param tipo int indicando qual pesquisa deve ser feita (nome, artistas ou os dois)
      * @return ArrayList<Long> enderecos dos registros em que houve ocorrencia dos termos pesquisados
      */
-    public ArrayList<Long> pesquisar(String query, int tipo) {
+    public ArrayList<Long> pesquisar(String query, String nome, String artista, int tipo) {
         ArrayList<Long> enderecos = new ArrayList<Long>();
-
-        // TODO: pesquisar nao funciona com mais de um termo 
-        // (tanto so nome/artista quanto ambos)
 
         if(tipo == 1){ // pesquisa por nome
             ListaInvertida listaNomes = leListaNomes();
@@ -216,17 +213,16 @@ public class ListasArq {
             ListaInvertida listaArtistas = leListaArtistas();
             
             if(listaNomes.getSize() != 0 && listaArtistas.getSize() != 0){
-                ArrayList<Long> endNomes = listaNomes.pesquisar(query);
-                ArrayList<Long> endArtistas = listaArtistas.pesquisar(query);
+                ArrayList<Long> endNomes = listaNomes.pesquisar(nome);
+                ArrayList<Long> endArtistas = listaArtistas.pesquisar(artista);
 
-                // TODO: provavel fonte de problema
                 // copia enderecos iguais (AND das duas pesquisas)
                 int i = 0, j = 0;
                 while(i < endNomes.size() && j < endArtistas.size()){
-                    if(endNomes.get(i) == endArtistas.get(j)){
-                        enderecos.add(endNomes.get(i));
+                    if(endNomes.get(i).equals(endArtistas.get(j))){
+                        enderecos.add(endNomes.get(i));    
                         i++; j++;
-                    } else if(endNomes.get(i) < endArtistas.get(j)){
+                    } else if(endNomes.get(i).compareTo(endArtistas.get(j)) < 0){
                         i++;
                     } else{
                         j++;
@@ -250,14 +246,46 @@ public class ListasArq {
     public boolean create(String nome, ArrayList<String> artistas, long endereco) {
         boolean sucesso = true;
         
-        ListaInvertida listaNomes = leListaNomes();
-        ListaInvertida listaArtistas = leListaArtistas();
+        if(!createNome(nome, endereco) || !createArtistas(artistas, endereco))
+            sucesso = false;
+
+        return sucesso;
+    }
+    /**
+     * Cria termos na lista invertida de nomes, a partir do nome da musica, separando
+     * string por espaco e inserindo nas listas os termos e o endereco da sua ocorrencia
+     * @param nome String do nome da musica
+     * @param endereco long posicao no arquivo de dados da musica
+     * @return true se conseguir criar termos nas listas, false se nao
+     */
+    public boolean createNome(String nome, long endereco) {
+        boolean sucesso = true;
         
-        // insere novos termos nas listas
+        ListaInvertida listaNomes = leListaNomes();
+        
+        // insere novos termos na lista de nomes
         String[] termosNomes = nome.split(" ");
         for(int i = 0; i < termosNomes.length; i++){
             sucesso = listaNomes.inserir(termosNomes[i], endereco);
         }
+
+        escreveListaNomes(listaNomes);
+
+        return sucesso;
+    }
+    /**
+     * Cria termos na lista invertida de artistas, a partir dos artistas da musica, separando
+     * string por espaco e inserindo nas listas os termos e o endereco da sua ocorrencia
+     * @param artistas ArrayList<String> de artistas da musica
+     * @param endereco long posicao no arquivo de dados da musica
+     * @return true se conseguir criar termos nas listas, false se nao
+     */
+    public boolean createArtistas(ArrayList<String> artistas, long endereco) {
+        boolean sucesso = true;
+        
+        ListaInvertida listaArtistas = leListaArtistas();
+        
+        // insere novos termos na lista de artistas
         for(int i = 0; i < artistas.size(); i++){
             String[] termosArtistas = artistas.get(i).split(" ");
             for(int j = 0; j < termosArtistas.length; j++){
@@ -265,7 +293,6 @@ public class ListasArq {
             }
         }
 
-        escreveListaNomes(listaNomes);
         escreveListaArtistas(listaArtistas);
 
         return sucesso;
@@ -279,22 +306,53 @@ public class ListasArq {
     public boolean delete(long endereco) {
         boolean sucesso = true;
         
-        ListaInvertida listaNomes = leListaNomes();
-        ListaInvertida listaArtistas = leListaArtistas();
-        
-        System.out.println("Removendo endereco " + endereco + " das listas invertidas.");
+        if(!deleteNome(endereco) || !deleteArtistas(endereco))
+            sucesso = false;
 
-        // remove termos das listas
+        return sucesso;
+    } 
+    /**
+     * Remove termos da lista invertida de nomes, que tem sua ocorrencia no registro do 
+     * endereco passado
+     * @param endereco long posicao no arquivo de dados da musica
+     * @return true se conseguir deletar termos, false caso contrario
+     */
+    public boolean deleteNome(long endereco) {
+        boolean sucesso = true;
+        
+        ListaInvertida listaNomes = leListaNomes();
+        
+        System.out.println("Removendo endereco " + endereco + " da lista invertida de nomes.");
+
+        // remove termos da lista
         if(listaNomes.getSize() != 0)
             sucesso = listaNomes.remover(endereco);
         else
             System.err.println("Lista de nomes esta vazia, nao foi possivel remover.");
+        
+        escreveListaNomes(listaNomes);
+
+        return sucesso;
+    } 
+    /**
+     * Remove termos da lista invertida de artistas, que tem sua ocorrencia no registro do 
+     * endereco passado
+     * @param endereco long posicao no arquivo de dados da musica
+     * @return true se conseguir deletar termos, false caso contrario
+     */
+    public boolean deleteArtistas(long endereco) {
+        boolean sucesso = true;
+        
+        ListaInvertida listaArtistas = leListaArtistas();
+        
+        System.out.println("Removendo endereco " + endereco + " da lista invertida de artistas.");
+
+        // remove termos da lista
         if(listaArtistas.getSize() != 0)
             sucesso = listaArtistas.remover(endereco);
         else
             System.err.println("Lista de artistas esta vazia, nao foi possivel remover.");
         
-        escreveListaNomes(listaNomes);
         escreveListaArtistas(listaArtistas);
 
         return sucesso;

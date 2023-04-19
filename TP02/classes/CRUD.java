@@ -455,17 +455,35 @@ public class CRUD {
                 regSize = arq.readInt();
 
                 if(lapide == ' '){ // lapide falsa => registro nao excluido
+                    // le registro antigo em bytes e converte para objeto 
+                    byte[] data = new byte[regSize];
+                    arq.read(data);
+                    Musica objAntigo = new Musica();
+                    objAntigo.fromByteArray(data);
+                    
                     // cria registro como array de bytes do objeto novo
                     objectData = objNovo.toByteArray();
                     regSizeNovo = objectData.length;
                     
                     if(regSizeNovo == regSize){ // mesmo tamanho => OK
+                        arq.seek(pos);
+                        arq.skipBytes(1 + Integer.BYTES);
                         arq.write(objectData);
-
-                        // TODO: lista invertida - checar se nome ou artista mudou 
-                        // (apesar do tamanho ser igual)
-
-                        sucesso = true;
+                       
+                        // verifica se nome ou artistas mudou
+                        if( !objAntigo.getName().equals(objNovo.getName()) && 
+                            listas.deleteNome(pos) && 
+                            listas.createNome(objNovo.getName(), pos) ){
+                            
+                            sucesso = true;
+                        } else if( !objAntigo.getArtists().equals(objNovo.getArtists()) && 
+                                   listas.deleteArtistas(pos) &&
+                                   listas.createArtistas(objNovo.getArtists(), pos) ){
+                           
+                            sucesso = true;
+                        } else{
+                            sucesso = true;
+                        }
                     } else{ // maior ou menor => delete + create
                         arq.seek(pos); // retorna para posicao da lapide
                         arq.writeByte('*');
