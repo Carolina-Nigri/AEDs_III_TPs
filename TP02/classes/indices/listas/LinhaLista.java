@@ -1,17 +1,15 @@
 /** Pacotes **/
 package TP02.classes.indices.listas;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /** Classe LinhaLista **/
 public class LinhaLista {
     /* Atributos */
     private String termo;
-    private int n;
-    private long[] ocorrencias;
+    private ArrayList<Long> ocorrencias;
 
     /* Getters e Setters */
     public String getTermo() {
@@ -20,24 +18,36 @@ public class LinhaLista {
     public void setTermo(String termo) {
         this.termo = termo;
     }
-    public long getN() {
-        return n;
-    }
-    public void setN(int n) {
-        this.n = n;
+    public int getSize() {
+        return ocorrencias.size();
     }
     public long getOcorrencia(int i) {
-        return ocorrencias[i];
+        return ocorrencias.get(i);
     }
     public void setOcorrencia(int i, long ocorrencia) {
-        this.ocorrencias[i] = ocorrencia;
+        if(i == 0 || i == ocorrencias.size()){
+            ocorrencias.add(ocorrencia);
+        } else{ // move resto da lista para colocar na posicao i 
+            int j = ocorrencias.size();
+            while(j > i){
+                ocorrencias.add(j, ocorrencias.get(j-1));
+
+                j--;
+            }
+            ocorrencias.add(i, ocorrencia);
+        }
+    }
+    public void delOcorrencia(int i) {
+        this.ocorrencias.remove(i);
     }
 
     /* Construtores */
+    public LinhaLista(){
+        this("");  
+    }
     public LinhaLista(String termo){
         this.termo = termo;
-        this.n = 0;
-        this.ocorrencias = null;
+        this.ocorrencias = new ArrayList<Long>();
     }
     
     /* Metodos */
@@ -47,10 +57,10 @@ public class LinhaLista {
      */  
     @Override
     public String toString() {
-        String str = "" + termo + " | n = " + n;
+        String str = "" + termo + " | n = " + ocorrencias.size();
 
-        for(int i = 0; i < n; i++){
-            str += " | " + ocorrencias[i];
+        for(int i = 0; i < ocorrencias.size(); i++){
+            str += " | " + ocorrencias.get(i);
         }
 
         return str;
@@ -65,33 +75,15 @@ public class LinhaLista {
         
         try{
             dos.writeUTF(termo);
-            dos.writeInt(n);
-            for(int i = 0; i < n; i++){
-                dos.writeLong(ocorrencias[i]);
+            dos.writeInt(ocorrencias.size());
+            
+            for(int i = 0; i < ocorrencias.size(); i++){
+                dos.writeLong(ocorrencias.get(i));
             }
         } catch(IOException ioe){
             System.err.println(ioe.getMessage());
         }
         
         return baos.toByteArray();
-    }
-    /**
-     * Converte um array de bytes para os atributos da classe, atribuindo
-     * ao objeto corrente
-     * @param byteArray array de bytes de um objeto
-     */
-    public void fromByteArray(byte[] ba) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
-        DataInputStream dis = new DataInputStream(bais);
-        
-        try{
-            termo = dis.readUTF();
-            n = dis.readInt();
-            for(int i = 0; i < n; i++){
-                ocorrencias[i] = dis.readLong();
-            }
-        } catch(IOException ioe){
-            System.err.println(ioe.getMessage());
-        }
     }
 }

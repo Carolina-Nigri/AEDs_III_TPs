@@ -4,7 +4,7 @@ import TP02.classes.CRUD;
 import TP02.classes.Musica;
 import TP02.classes.indices.arvore.ArvoreArq;
 import TP02.classes.indices.hashing.HashEstendido;
-import TP02.classes.indices.listas.ListasInvertidas;
+import TP02.classes.indices.listas.ListasArq;
 import java.util.ArrayList;
 import java.util.Date;
 import java.io.BufferedReader;
@@ -40,7 +40,7 @@ public class TP02 {
             // abre indices
             HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
             ArvoreArq arvore = new ArvoreArq();
-            ListasInvertidas listas = new ListasInvertidas();
+            ListasArq listas = new ListasArq();
 
             do{
                 opc = menu();
@@ -170,14 +170,14 @@ public class TP02 {
                                     int pesq = lerPesquisa();
                                     System.out.print("Query de pesquisa: ");
                                     String query = br.readLine();
-                                    
-                                    long[] ocorrencias = listas.pesquisar(query, pesq);
 
-                                    if(ocorrencias == null){
+                                    ArrayList<Long> ocorrencias = listas.pesquisar(query, pesq);
+
+                                    if(ocorrencias.size() == 0){
                                         System.out.println("Nenhum resultado encontrado para essa pesquisa.");
                                     } else{
-                                        for(int i = 0; i < ocorrencias.length; i++){
-                                            Musica msc = arquivo.readPos(ocorrencias[i]);
+                                        for(int i = 0; i < ocorrencias.size(); i++){
+                                            Musica msc = arquivo.readPos(ocorrencias.get(i));
                                             if(msc != null)
                                                 System.out.println("\n" + msc);
                                             else

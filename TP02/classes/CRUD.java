@@ -2,7 +2,7 @@
 package TP02.classes;
 import TP02.classes.indices.arvore.ArvoreArq;
 import TP02.classes.indices.hashing.HashEstendido;
-import TP02.classes.indices.listas.ListasInvertidas;
+import TP02.classes.indices.listas.ListasArq;
 import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -320,7 +320,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListasInvertidas listas = new ListasInvertidas();
+        ListasArq listas = new ListasArq();
 
         try{
             arq.seek(0); // inicio do arquivo
@@ -343,7 +343,7 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            if( hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && 
+            if( /*hash.create(ultimoID, pos) &&*/ arvore.create(ultimoID, pos) && 
                 listas.create(obj.getName(), obj.getArtists(), pos) ){
                 sucesso = true;
             }
@@ -432,7 +432,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListasInvertidas listas = new ListasInvertidas();
+        ListasArq listas = new ListasArq();
 
         try{
             long pos = -1;
@@ -499,7 +499,7 @@ public class CRUD {
         // abre indices
         HashEstendido hash = new HashEstendido((int)(0.05 * tamBase));
         ArvoreArq arvore = new ArvoreArq();
-        ListasInvertidas listas = new ListasInvertidas();
+        ListasArq listas = new ListasArq();
 
         try{
             long pos = -1;
