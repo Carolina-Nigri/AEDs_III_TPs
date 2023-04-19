@@ -128,7 +128,7 @@ public class HashEstendido {
                 
                 rafBucket.read(byteArray);
                 bucket.fromByteArray(byteArray);
-                System.out.println("\nEndereco " + pos + ": " + bucket);
+                System.out.println("Endereco " + pos + ": " + bucket);
 
                 pos = rafBucket.getFilePointer();
             }

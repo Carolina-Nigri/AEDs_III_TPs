@@ -195,6 +195,13 @@ public class Pagina {
     }
         /* Manipulacao da Arvore */
     /**
+     * 
+     * @param chave
+     */
+    public void remover(int chave) {
+        // TODO: implementar remover
+    }
+    /**
      * Insere chave na pagina, procurando posicao de forma a manter ordenada
      * @param chave identificador a ser inserido
      * @param endereco posicao em arquivo da chave

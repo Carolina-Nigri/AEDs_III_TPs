@@ -107,7 +107,11 @@ public class ListaInvertida {
 
         return enderecos;
     }
-
+    /**
+     * Pesquisa por um termo na lista e retorna ocorrencias dele
+     * @param termo String a ser pesquisada
+     * @return ArrayList<Long> de enderecos de registros onde o termo aparece
+     */
     private ArrayList<Long> pesquisarTermo(String termo) {
         ArrayList<Long> enderecos = new ArrayList<Long>();
 
@@ -129,10 +133,17 @@ public class ListaInvertida {
 
         return enderecos;
     }
-
+    /**
+     * Compara arrays de enderecos e copia os que sao iguais para um novo array, que eh 
+     * retornado
+     * @param endTmp ArrayList<Long> de enderecos temporario
+     * @param enderecos ArrayList<Long> de enderecos atuais
+     * @return ArrayList<Long> de enderecos resultante
+     */
     private ArrayList<Long> copiaIguais(ArrayList<Long> endTmp, ArrayList<Long> enderecos) {
         ArrayList<Long> resultante = new ArrayList<Long>();
         
+        // TODO: provavel fonte de problema
         // copia enderecos iguais (AND das duas pesquisas)
         int i = 0, j = 0;
         while(i < enderecos.size() && j < endTmp.size()){
@@ -145,7 +156,7 @@ public class ListaInvertida {
                 j++;
             }
         }
-
+    
         return resultante;
     }
     /**

@@ -462,6 +462,9 @@ public class CRUD {
                     if(regSizeNovo == regSize){ // mesmo tamanho => OK
                         arq.write(objectData);
 
+                        // TODO: lista invertida - checar se nome ou artista mudou 
+                        // (apesar do tamanho ser igual)
+
                         sucesso = true;
                     } else{ // maior ou menor => delete + create
                         arq.seek(pos); // retorna para posicao da lapide

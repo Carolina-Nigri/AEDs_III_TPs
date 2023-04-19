@@ -66,14 +66,14 @@ public class ArvoreB {
     }
         /* Manipulacao da Arvore */
     /**
-     * TODO: implementar remover
-     * @param chave identificador a ser inserido
+     * 
+     * @param chave identificador a ser removido
      * @return true se conseguir remover, false caso contrario
      */
     public boolean remover(int chave) {
         boolean removeu = false;
         
-        
+        // TODO: implementar remover
 
         setarPosArq(raiz, Long.BYTES);
 

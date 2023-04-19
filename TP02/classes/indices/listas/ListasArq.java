@@ -194,6 +194,9 @@ public class ListasArq {
     public ArrayList<Long> pesquisar(String query, int tipo) {
         ArrayList<Long> enderecos = new ArrayList<Long>();
 
+        // TODO: pesquisar nao funciona com mais de um termo 
+        // (tanto so nome/artista quanto ambos)
+
         if(tipo == 1){ // pesquisa por nome
             ListaInvertida listaNomes = leListaNomes();
 
@@ -216,6 +219,7 @@ public class ListasArq {
                 ArrayList<Long> endNomes = listaNomes.pesquisar(query);
                 ArrayList<Long> endArtistas = listaArtistas.pesquisar(query);
 
+                // TODO: provavel fonte de problema
                 // copia enderecos iguais (AND das duas pesquisas)
                 int i = 0, j = 0;
                 while(i < endNomes.size() && j < endArtistas.size()){
@@ -278,6 +282,8 @@ public class ListasArq {
         ListaInvertida listaNomes = leListaNomes();
         ListaInvertida listaArtistas = leListaArtistas();
         
+        System.out.println("Removendo endereco " + endereco + " das listas invertidas.");
+
         // remove termos das listas
         if(listaNomes.getSize() != 0)
             sucesso = listaNomes.remover(endereco);

@@ -323,6 +323,8 @@ public class ArvoreArq {
      * @return long endereco no arquivo de dados da chave 
      */
     public long read(int chave) {
+        // TODO: read da arvore esta com problema
+
         long endereco = -1;
 
         try{

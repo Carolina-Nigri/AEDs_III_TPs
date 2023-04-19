@@ -178,10 +178,12 @@ public class TP02 {
                                     } else{
                                         for(int i = 0; i < ocorrencias.size(); i++){
                                             Musica msc = arquivo.readPos(ocorrencias.get(i));
-                                            if(msc != null)
-                                                System.out.println("\n" + msc);
-                                            else
+                                            if(msc != null){
+                                                System.out.println("\nEndereco " + ocorrencias.get(i));
+                                                System.out.println(msc);
+                                            } else{
                                                 System.out.println("Musica pesquisada nao encontrada.");
+                                            }
                                         }
                                     }
 
@@ -256,7 +258,7 @@ public class TP02 {
         System.out.println("2 - Read");
         System.out.println("3 - Update");
         System.out.println("4 - Delete");
-        System.out.println("5 - Mostrar indices");
+        System.out.println("5 - Indices");
         System.out.println("6 - Fechar programa");
         System.out.println("7 - Deletar arquivos");
         
