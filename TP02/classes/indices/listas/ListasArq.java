@@ -252,19 +252,14 @@ public class ListasArq {
         // insere novos termos nas listas
         String[] termosNomes = nome.split(" ");
         for(int i = 0; i < termosNomes.length; i++){
-            System.out.println("Inserindo termo de nome " + termosNomes[i]);
             sucesso = listaNomes.inserir(termosNomes[i], endereco);
         }
-        // for(int i = 0; i < artistas.size(); i++){
-        //     String[] termosArtistas = artistas.get(i).split(" ");
-        //     for(int j = 0; j < termosArtistas.length; j++){
-        //         System.out.println("Inserindo termo de artista " + termosArtistas[j]);
-        //         sucesso = listaArtistas.inserir(termosArtistas[j], endereco);
-        //     }
-        // }
-
-        // listaNomes.print();
-        // listaArtistas.print();
+        for(int i = 0; i < artistas.size(); i++){
+            String[] termosArtistas = artistas.get(i).split(" ");
+            for(int j = 0; j < termosArtistas.length; j++){
+                sucesso = listaArtistas.inserir(termosArtistas[j], endereco);
+            }
+        }
 
         escreveListaNomes(listaNomes);
         escreveListaArtistas(listaArtistas);

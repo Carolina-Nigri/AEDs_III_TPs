@@ -121,7 +121,7 @@ public class ListaInvertida {
             LinhaLista tmp = new LinhaLista(termo);
             tmp.setOcorrencia(0, endereco);
             linhas.add(tmp);
-            
+
             inseriu = true;
         } else{ // lista ja tem pelo menos uma linha
             // acha pos de insercao do termo (ordenados)
@@ -151,14 +151,6 @@ public class ListaInvertida {
                 } else{ // criar linha no lugar da linha i e arrastar as seguintes
                     tmp = new LinhaLista(termo);
                     tmp.setOcorrencia(0, endereco);
-                    
-                    // move resto da lista para colocar na posicao i 
-                    int j = linhas.size();
-                    while(j > i){
-                        linhas.add(j, linhas.get(j-1));
-
-                        j--;
-                    }
                     linhas.add(i, tmp);
                     
                     inseriu = true;
@@ -171,7 +163,7 @@ public class ListaInvertida {
                 inseriu = true;
             } 
         }
-        
+
         return inseriu;
     }
     /**

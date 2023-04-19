@@ -343,7 +343,7 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            if( /*hash.create(ultimoID, pos) &&*/ arvore.create(ultimoID, pos) && 
+            if( hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && 
                 listas.create(obj.getName(), obj.getArtists(), pos) ){
                 sucesso = true;
             }

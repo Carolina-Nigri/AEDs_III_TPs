@@ -25,17 +25,7 @@ public class LinhaLista {
         return ocorrencias.get(i);
     }
     public void setOcorrencia(int i, long ocorrencia) {
-        if(i == 0 || i == ocorrencias.size()){
-            ocorrencias.add(ocorrencia);
-        } else{ // move resto da lista para colocar na posicao i 
-            int j = ocorrencias.size();
-            while(j > i){
-                ocorrencias.add(j, ocorrencias.get(j-1));
-
-                j--;
-            }
-            ocorrencias.add(i, ocorrencia);
-        }
+        ocorrencias.add(i, ocorrencia);
     }
     public void delOcorrencia(int i) {
         this.ocorrencias.remove(i);
