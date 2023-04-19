@@ -200,8 +200,10 @@ public class ListaInvertida {
                     tmp.delOcorrencia(meio);
 
                     // termo nao possui outras ocorrencias => remove
-                    if(tmp.getSize() == 0)
+                    if(tmp.getSize() == 0){
                         linhas.remove(i);
+                        i--;
+                    }
 
                     removeu = true;
                 }

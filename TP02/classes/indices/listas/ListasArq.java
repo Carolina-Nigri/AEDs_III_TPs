@@ -283,7 +283,7 @@ public class ListasArq {
             sucesso = listaNomes.remover(endereco);
         else
             System.err.println("Lista de nomes esta vazia, nao foi possivel remover.");
-        if(listaNomes.getSize() != 0)
+        if(listaArtistas.getSize() != 0)
             sucesso = listaArtistas.remover(endereco);
         else
             System.err.println("Lista de artistas esta vazia, nao foi possivel remover.");

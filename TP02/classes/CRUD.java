@@ -468,7 +468,7 @@ public class CRUD {
                         arq.writeByte('*');
 
                         // deleta registro antigo dos indices e cria novo 
-                        if( hash.delete(objNovo.getID()) && arvore.delete(objNovo.getID()) 
+                        if( hash.delete(objNovo.getID()) /*&& arvore.delete(objNovo.getID())*/ 
                             && listas.delete(pos) && create(objNovo, tamBase) ){
                             sucesso = true;
                         } 
@@ -523,7 +523,7 @@ public class CRUD {
                     arq.writeByte('*');
 
                     // deleta registro dos indices
-                    sucesso = (hash.delete(ID) && arvore.delete(ID) && listas.delete(pos));
+                    sucesso = (hash.delete(ID) /*&& arvore.delete(ID)*/ && listas.delete(pos));
                 }
             }
         } catch(IOException ioe){
