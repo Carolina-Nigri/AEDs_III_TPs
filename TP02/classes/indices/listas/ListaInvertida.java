@@ -90,23 +90,63 @@ public class ListaInvertida {
         ArrayList<Long> enderecos = new ArrayList<Long>();
 
         if(linhas.size() != 0){ // lista nao esta vazia
-            // String[] termos = query.split(" ");
+            String[] termos = query.split(" ");
 
-            // // copia enderecos iguais (AND das duas pesquisas)
-            // int i = 0, j = 0, k = 0;
-            // while(i < endNomes.size() && j < endArtistas.size()){
-            //     if(endNomes.get(i) == endArtistas.get(j)){
-            //         enderecos.add(k, endNomes.get(i));
-            //         i++; j++; k++;
-            //     } else if(endNomes.get(i) < endArtistas.get(j)){
-            //         i++;
-            //     } else{
-            //         j++;
-            //     }
-            // }
+            if(termos.length == 1){ // so um termo a pesquisar
+                enderecos = pesquisarTermo(termos[0]);
+            } else{ // mais de um termo p/pesquisar
+                enderecos = pesquisarTermo(termos[0]);
+                
+                // pesquisa cada termo e salva enderecos iguais
+                for(int i = 1; i < termos.length; i++){
+                    ArrayList<Long> endTmp = pesquisarTermo(termos[i]);
+                    enderecos = copiaIguais(endTmp, enderecos);
+                }
+            }
         }
 
         return enderecos;
+    }
+
+    private ArrayList<Long> pesquisarTermo(String termo) {
+        ArrayList<Long> enderecos = new ArrayList<Long>();
+
+        // faz uma pesquisa binaria pelo termo
+        int dir = (linhas.size() - 1), esq = 0, meio = 0;
+        boolean achou = false;
+        while(esq <= dir && !achou){
+            meio = (esq + dir) / 2;
+            
+            if(termo.equals(linhas.get(meio).getTermo()))
+                achou = true;
+            else if(termo.compareTo(linhas.get(meio).getTermo()) > 0)
+                esq = meio + 1;
+            else
+                dir = meio - 1;
+        }
+
+        if(achou) enderecos = linhas.get(meio).getOcorrencias();
+
+        return enderecos;
+    }
+
+    private ArrayList<Long> copiaIguais(ArrayList<Long> endTmp, ArrayList<Long> enderecos) {
+        ArrayList<Long> resultante = new ArrayList<Long>();
+        
+        // copia enderecos iguais (AND das duas pesquisas)
+        int i = 0, j = 0;
+        while(i < enderecos.size() && j < endTmp.size()){
+            if(enderecos.get(i) == endTmp.get(j)){
+                resultante.add(enderecos.get(i));    
+                i++; j++;
+            } else if(enderecos.get(i) < endTmp.get(j)){
+                i++;
+            } else{
+                j++;
+            }
+        }
+
+        return resultante;
     }
     /**
      * Insere o par termo e endereco na lista invertida, retornando se houve sucesso

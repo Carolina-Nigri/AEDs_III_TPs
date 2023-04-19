@@ -194,44 +194,44 @@ public class ListasArq {
     public ArrayList<Long> pesquisar(String query, int tipo) {
         ArrayList<Long> enderecos = new ArrayList<Long>();
 
-        // if(tipo == 1){ // pesquisa por nome
-        //     leListaNomes();
+        if(tipo == 1){ // pesquisa por nome
+            ListaInvertida listaNomes = leListaNomes();
 
-        //     if(listaNomes.getSize() != 0)
-        //         enderecos = listaNomes.pesquisar(query);    
-        //     else
-        //         System.err.println("Lista de nomes esta vazia, nao foi possivel pesquisar.");
-        // } else if(tipo == 2){ // pesquisa por artista
-        //     leListaArtistas();
+            if(listaNomes.getSize() != 0)
+                enderecos = listaNomes.pesquisar(query);    
+            else
+                System.err.println("Lista de nomes esta vazia, nao foi possivel pesquisar.");
+        } else if(tipo == 2){ // pesquisa por artista
+            ListaInvertida listaArtistas = leListaArtistas();
             
-        //     if(listaArtistas.getSize() != 0)
-        //         enderecos = listaArtistas.pesquisar(query);            
-        //     else
-        //         System.err.println("Lista de artistas esta vazia, nao foi possivel pesquisar.");
-        // } else if(tipo == 3){ // pesquisa por nome e artista
-        //     leListaNomes();
-        //     leListaArtistas();
+            if(listaArtistas.getSize() != 0)
+                enderecos = listaArtistas.pesquisar(query);            
+            else
+                System.err.println("Lista de artistas esta vazia, nao foi possivel pesquisar.");
+        } else if(tipo == 3){ // pesquisa por nome e artista
+            ListaInvertida listaNomes = leListaNomes();
+            ListaInvertida listaArtistas = leListaArtistas();
             
-        //     if(listaNomes.getSize() != 0 && listaArtistas.getSize() != 0){
-        //         ArrayList<Long> endNomes = listaNomes.pesquisar(query);
-        //         ArrayList<Long> endArtistas = listaArtistas.pesquisar(query);
+            if(listaNomes.getSize() != 0 && listaArtistas.getSize() != 0){
+                ArrayList<Long> endNomes = listaNomes.pesquisar(query);
+                ArrayList<Long> endArtistas = listaArtistas.pesquisar(query);
 
-        //         // copia enderecos iguais (AND das duas pesquisas)
-        //         int i = 0, j = 0, k = 0;
-        //         while(i < endNomes.size() && j < endArtistas.size()){
-        //             if(endNomes.get(i) == endArtistas.get(j)){
-        //                 enderecos.add(k, endNomes.get(i));
-        //                 i++; j++; k++;
-        //             } else if(endNomes.get(i) < endArtistas.get(j)){
-        //                 i++;
-        //             } else{
-        //                 j++;
-        //             }
-        //         }
-        //     } else{
-        //         System.err.println("Listas invertidas estao vazias, nao foi possivel pesquisar.");
-        //     }
-        // }
+                // copia enderecos iguais (AND das duas pesquisas)
+                int i = 0, j = 0;
+                while(i < endNomes.size() && j < endArtistas.size()){
+                    if(endNomes.get(i) == endArtistas.get(j)){
+                        enderecos.add(endNomes.get(i));
+                        i++; j++;
+                    } else if(endNomes.get(i) < endArtistas.get(j)){
+                        i++;
+                    } else{
+                        j++;
+                    }
+                }
+            } else{
+                System.err.println("Listas invertidas estao vazias, nao foi possivel pesquisar.");
+            }
+        }
 
         return enderecos;
     }

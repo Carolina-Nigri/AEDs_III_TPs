@@ -21,6 +21,9 @@ public class LinhaLista {
     public int getSize() {
         return ocorrencias.size();
     }
+    public ArrayList<Long> getOcorrencias() {
+        return ocorrencias;
+    }
     public long getOcorrencia(int i) {
         return ocorrencias.get(i);
     }
