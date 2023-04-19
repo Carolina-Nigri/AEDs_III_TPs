@@ -252,18 +252,17 @@ public class ArvoreArq {
 
                 // procura chave na pagina
                 int i = 0; 
-                boolean achou = false;
-                while(i > -1 && i < pag.getN() && !achou){
+                boolean achou = false, saiu = false;
+                while(i < pag.getN() && !achou && !saiu){
                     if(chave == pag.getChave(i)){ 
                         achou = true;
                         endereco = pag.getEndereco(i);
                     } else if(chave > pag.getChave(i)){ 
                         i++;
                     } else{ 
-                        i--;
+                        saiu = true;
                     }
                 }
-                if(i == -1) i++;
                 
                 // nao achou na pag e ela nao eh folha => pesquisa nas paginas filhas
                 if(!achou && !pag.isFolha()){
@@ -323,8 +322,6 @@ public class ArvoreArq {
      * @return long endereco no arquivo de dados da chave 
      */
     public long read(int chave) {
-        // TODO: read da arvore esta com problema
-
         long endereco = -1;
 
         try{
@@ -347,18 +344,17 @@ public class ArvoreArq {
 
                 // procura chave na raiz
                 int i = 0; 
-                boolean achou = false;
-                while(i > -1 && i < raiz.getN() && !achou){
+                boolean achou = false, saiu = false;
+                while(i < raiz.getN() && !achou && !saiu){
                     if(chave == raiz.getChave(i)){ 
                         achou = true;
                         endereco = raiz.getEndereco(i);
                     } else if(chave > raiz.getChave(i)){ 
                         i++;
                     } else{ 
-                        i--;
+                        saiu = true;
                     }
                 }
-                if(i == -1) i++;
 
                 // nao achou na raiz e ela nao eh folha => pesquisa nas paginas filhas
                 if(!achou && !raiz.isFolha()){

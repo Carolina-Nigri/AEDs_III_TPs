@@ -343,7 +343,7 @@ public class CRUD {
             arq.writeInt(ultimoID);
 
             // atualiza arquivos de indice e verifica se retorna se deu certo
-            if( hash.create(ultimoID, pos) && arvore.create(ultimoID, pos) && 
+            if( arvore.create(ultimoID, pos) && hash.create(ultimoID, pos) && 
                 listas.create(obj.getName(), obj.getArtists(), pos) ){
                 sucesso = true;
             }
@@ -489,7 +489,7 @@ public class CRUD {
                         arq.writeByte('*');
 
                         // deleta registro antigo dos indices e cria novo 
-                        if( hash.delete(objNovo.getID()) /*&& arvore.delete(objNovo.getID())*/ 
+                        if( arvore.delete(objNovo.getID()) && hash.delete(objNovo.getID())  
                             && listas.delete(pos) && create(objNovo, tamBase) ){
                             sucesso = true;
                         } 
@@ -544,7 +544,7 @@ public class CRUD {
                     arq.writeByte('*');
 
                     // deleta registro dos indices
-                    sucesso = (hash.delete(ID) /*&& arvore.delete(ID)*/ && listas.delete(pos));
+                    sucesso = arvore.delete(ID) && (hash.delete(ID) && listas.delete(pos));
                 }
             }
         } catch(IOException ioe){
