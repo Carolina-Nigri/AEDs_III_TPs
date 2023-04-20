@@ -263,7 +263,7 @@ public class ArvoreArq {
                         saiu = true;
                     }
                 }
-                
+
                 // nao achou na pag e ela nao eh folha => pesquisa nas paginas filhas
                 if(!achou && !pag.isFolha()){
                     endereco = pesquisaFilhas(pag.getFilha(i), chave);
@@ -387,16 +387,19 @@ public class ArvoreArq {
             rafArvore.seek(0);
             long pontRaiz = rafArvore.readLong();
             
-            // se arvore nao estiver vazia, le do arquivo
+            // se arvore nao estiver vazia, faz delete
             if(pontRaiz != -1){
+                // le arvore do arquivo
                 leArvore(); 
+                
+                // faz remocao na arvore
+                sucesso = arvore.remover(chave);
+                
+                // escreve de volta no arquivo
+                escreveArvore();
+            } else{
+                System.out.println("Arvore esta vazia, nao foi possivel deletar.");
             }
-            
-            // faz remocao na arvore
-            sucesso = arvore.remover(chave);
-            
-            // escreve de volta no arquivo
-            escreveArvore();
         } catch(FileNotFoundException fnfe){
             System.err.println(fnfe.getMessage());
         } catch(IOException ioe){

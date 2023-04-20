@@ -66,18 +66,83 @@ public class ArvoreB {
     }
         /* Manipulacao da Arvore */
     /**
-     * 
+     * Remove par chave e endereco na arvore B. Pesquisa chave primeiro, verificando se 
+     * existe. Depois, testa casos mais simples de remocao, que permitem remocao direta. 
+     * // TODO: remocoes que exigem busca interna ou merge
      * @param chave identificador a ser removido
      * @return true se conseguir remover, false caso contrario
      */
     public boolean remover(int chave) {
         boolean removeu = false;
         
-        // TODO: implementar remover
+        // pesquisa pagina de onde chave deve ser removida
+        Pagina pag = pesquisar(raiz, chave);
+        if(pag != null){ // chave existe
+            if(pag.equals(raiz) && raiz.isFolha()){
+                // remocao de uma raiz folha => remove direto
+                raiz.remover(chave);
 
-        setarPosArq(raiz, Long.BYTES);
+                // raiz ficou vazia
+                if(raiz.getN() == 0) raiz = null;
+
+                removeu = true;
+            } else if(pag.isFolha() && pag.getN() > (nMax/2)){
+                // pagina eh folha e mantem ocupacao min
+                pag.remover(chave);
+                removeu = true;
+            } 
+            // else{ // remove internamente
+            //     removeu = remover(raiz, chave);
+            // }
+                
+            setarPosArq(raiz, Long.BYTES);
+        }
 
         return removeu;
+    }
+    // private boolean remover(Pagina pag, int chave) {
+    //     boolean removeu = false;
+    //     int pos = pag.pesquisar(chave); // posicao da chave na pagina
+
+    //     // posicao eh valida
+    //     if(pos != -1){ 
+    //         if(pag.isFolha()){
+                
+    //         }
+    //     } else{
+
+    //     }
+
+    //     return removeu;
+    // }
+    /**
+     * Pesquisa chave na arvore, recursivamente passando pelas paginas onde chave pode estar
+     * @param pag Pagina atual
+     * @param chave identificador a pesquisar
+     * @return Pagina onde chave pode estar
+     */
+    private Pagina pesquisar(Pagina pag, int chave) {
+        if(pag != null){
+            // procura chave na pagina
+            int i = 0; 
+            boolean achou = false, saiu = false;
+            while(i < pag.getN() && !achou && !saiu){
+                if(chave == pag.getChave(i)){ 
+                    achou = true;
+                } else if(chave > pag.getChave(i)){ 
+                    i++;
+                } else{ 
+                    saiu = true;
+                }
+            }
+
+            // nao achou na pagina e ela nao eh folha => pesquisa nas paginas filhas
+            if(!achou && !pag.isFolha()){
+                pag = pesquisar(pag.getFilha(i), chave);
+            }
+        }
+
+        return pag;
     }
     /**
      * Insere par chave e endereco na arvore B. Se raiz nao existir, cria e insere nela.

@@ -195,11 +195,19 @@ public class Pagina {
     }
         /* Manipulacao da Arvore */
     /**
-     * 
-     * @param chave
+     * Remove par chave/endereco da pagina, movendo outros pares  
+     * @param chave identificador a ser removido
      */
     public void remover(int chave) {
-        // TODO: implementar remover
+        int i = pesquisar(chave);
+        
+        for(int j = i; j < (nMax-1); j++){
+            chaves[j] = chaves[j+1]; 
+            enderecos[j] = enderecos[j+1]; 
+        }
+        chaves[nMax-1] = -1;
+        enderecos[nMax-1] = -1;
+        n--;
     }
     /**
      * Insere chave na pagina, procurando posicao de forma a manter ordenada
@@ -218,6 +226,23 @@ public class Pagina {
         chaves[i+1] = chave;
         enderecos[i+1] = endereco; 
         n++;
+    }
+    /**
+     * Pesquisa chave na pagina, retornando sua posicao na pagina ou -1 se nao achar
+     * @param chave identificador a ser pesquisado 
+     * @return int posicao da chave
+     */
+    public int pesquisar(int chave) {
+        int i = 0;
+
+        boolean achou = false;
+        while(i < n && !achou){
+            if(chave == chaves[i]) achou = true;
+            else i++;
+        }
+        if(!achou) i = -1;
+
+        return i;
     }
     /**
      * Achar em qual pagina filha deve-se inserir a chave, retornando sua posicao 
