@@ -2,7 +2,7 @@
 
 Indexação: Árvore B, Hashing estendido e Lista invertida
 
-- Link do vídeo: <>
+- Link do vídeo: <https://youtu.be/XbIMqgh0u6g>
 - Observações sobre implementação:
     - Create: IDs dos registros são setados na criação, somando um ao valor do último ID, armazenado no arquivo de registros; retorna se foi possível adicionar chave nos arquivos de índice corretamente (cria chave em todos índices em toda criação de registro).
     - Read: permite a escolha de qual índice deve ser usado para pesquisar chave (Árvore B ou Hashing).
