@@ -67,8 +67,8 @@ public class ArvoreB {
         /* Manipulacao da Arvore */
     /**
      * Remove par chave e endereco na arvore B. Pesquisa chave primeiro, verificando se 
-     * existe. Depois, testa casos mais simples de remocao, que permitem remocao direta. 
-     * // TODO: remocoes que exigem busca interna ou merge
+     * existe. Depois, testa casos de remocao, fazendo passos necessarios dependendo da 
+     * situacao. 
      * @param chave identificador a ser removido
      * @return true se conseguir remover, false caso contrario
      */
@@ -78,43 +78,132 @@ public class ArvoreB {
         // pesquisa pagina de onde chave deve ser removida
         Pagina pag = pesquisar(raiz, chave);
         if(pag != null){ // chave existe
-            if(pag.equals(raiz) && raiz.isFolha()){
-                // remocao de uma raiz folha => remove direto
-                raiz.remover(chave);
+            if(pag.isFolha()){ // pagina eh folha
+               
+                if(pag.equals(raiz)){ // remocao de uma raiz folha: remove direto
+                    raiz.remover(chave);
+                    removeu = true;
+                    // raiz ficou vazia
+                    if(raiz.getN() == 0) raiz = null;
 
-                // raiz ficou vazia
-                if(raiz.getN() == 0) raiz = null;
+                } else if(pag.getN() > (nMax/2)){  // mantem ocupacao min: remove direto
+                    pag.remover(chave);
+                    removeu = true;
+                
+                } else{ // NAO mantem ocupacao min
+                    Pagina pagIrma = getIrma(raiz, pag, chave);
 
-                removeu = true;
-            } else if(pag.isFolha() && pag.getN() > (nMax/2)){
-                // pagina eh folha e mantem ocupacao min
-                pag.remover(chave);
-                removeu = true;
-            } 
-            // else{ // remove internamente
-            //     removeu = remover(raiz, chave);
-            // }
+                    if(pagIrma.getN() > (nMax/2)){
+                        removeu = true;
+                    } else{
+                        System.err.println("Esse tipo de remocao da arvore nao foi implementado.");
+                    }
+                }
+
+            } else{ // pagina NAO eh folha
+                
+                // busca antecessor da chave
+                int pos = pag.pesquisar(chave);
+                Pagina maiorEsq = getMaiorFilhaEsq(pag.getFilha(pos));
+                int maiorN = maiorEsq.getN();
+
+                // verifica se maiorEsq mantem ocupacao min
+                if(maiorN > (nMax/2)){
+                    // substitui chave a remover pela maior da esquerda
+                    pag.setChave(pos, maiorEsq.getChave(maiorN-1));
+                    pag.setEndereco(pos, maiorEsq.getEndereco(maiorN-1));
+                    maiorEsq.setChave(maiorN-1, -1);
+                    maiorEsq.setEndereco(maiorN-1, -1);
+                    maiorEsq.setN(maiorN-1);
+
+                    removeu = true;
+                } else{
+                    System.err.println("Esse tipo de remocao da arvore nao foi implementado.");
+                }
+
+            }
                 
             setarPosArq(raiz, Long.BYTES);
         }
 
         return removeu;
     }
-    // private boolean remover(Pagina pag, int chave) {
-    //     boolean removeu = false;
-    //     int pos = pag.pesquisar(chave); // posicao da chave na pagina
+    /**
+     * Retorna chave irma posterior a pagina procurada (ou anterior se procurada for ultima)
+     * @param pai Pagina pai
+     * @param procurada Pagina que se quer encontrar a irma
+     * @param chave identificador a pesquisar
+     * @return Pagina irma da procurada
+     */
+    private Pagina getIrma(Pagina pai, Pagina procurada, int chave) {
+        Pagina irma = null;
 
-    //     // posicao eh valida
-    //     if(pos != -1){ 
-    //         if(pag.isFolha()){
-                
-    //         }
-    //     } else{
+        if(pai != null){
+            // procura chave na pagina
+            int i = 0; 
+            boolean achou = false, saiu = false;
+            while(i < pai.getN() && !achou && !saiu){
+                if(chave == pai.getChave(i)){ 
+                    achou = true;
+                } else if(chave > pai.getChave(i)){ 
+                    i++;
+                } else{ 
+                    saiu = true;
+                }
+            }
 
-    //     }
+            if(!achou && !pai.getFilha(i).equals(procurada)){
+                irma = pesquisar(pai.getFilha(i), chave);
+            } else{
+                if(i == (pai.getN()+1)){
+                    irma = pai.getFilha(i-1);
+                } else{
+                    irma = pai.getFilha(i+1);
+                }
 
-    //     return removeu;
-    // }
+                int irmaN = irma.getN();
+                // verifica se irma mantem ocupacao min
+                if(irmaN > (nMax/2)){
+                    // substitui chave a remover pela da irma
+                    int chaveIrma = irma.getChave(0);
+                    long endIrma = irma.getEndereco(0);
+                    
+                    if(chaveIrma < chave){
+                        chaveIrma = irma.getChave(irmaN-1); 
+                        endIrma = irma.getEndereco(irmaN-1);
+                    }
+                    
+                    int pos = procurada.pesquisar(chave);
+                    procurada.setChave(pos, pai.getChave(i));
+                    procurada.setEndereco(pos, pai.getEndereco(i));
+                    pai.setChave(i, chaveIrma);
+                    pai.setEndereco(i,endIrma);
+                    irma.remover(chaveIrma);
+                }
+            } 
+        }
+
+        return irma;
+    }
+    /**
+     * Procura pagina filha que tem os maiores valores a esquerda
+     * @param pag Pagina atual
+     * @return Pagina maior a esquerda
+     */
+    private Pagina getMaiorFilhaEsq(Pagina pag) {
+        if(pag != null){
+            // procura pagina mais a direita
+            int i = 0;
+            while(pag.getFilha(i) != null){
+                i++;
+            }
+
+            if(pag.getFilha(i) != null)
+                pag = getMaiorFilhaEsq(pag.getFilha(i));
+        }
+
+        return pag;
+    }
     /**
      * Pesquisa chave na arvore, recursivamente passando pelas paginas onde chave pode estar
      * @param pag Pagina atual
